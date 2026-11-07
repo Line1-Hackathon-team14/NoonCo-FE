@@ -1,0 +1,44 @@
+
+name: "🔧 Chore"
+description: "개발 환경 설정 및 유지보수 작업"
+title: "[CHORE] "
+labels: ["chore"]
+
+body:
+  - type: textarea
+    id: overview
+    attributes:
+      label: "📌 작업 개요"
+      description: "수행할 작업의 목적을 작성해주세요."
+      placeholder: "예: Prettier 및 CSS Reset 설정"
+    validations:
+      required: true
+
+  - type: textarea
+    id: tasks
+    attributes:
+      label: "✅ 작업 내용"
+      value: |
+        - [ ] 
+        - [ ] 
+        - [ ] 
+    validations:
+      required: true
+
+  - type: input
+    id: files
+    attributes:
+      label: "📂 변경 예정 파일"
+      placeholder: "예: package.json, vite.config.js"
+
+  - type: textarea
+    id: references
+    attributes:
+      label: "🔗 참고 자료"
+      description: "관련 문서나 이슈를 첨부해주세요."
+
+  - type: textarea
+    id: notes
+    attributes:
+      label: "💬 기타 사항"
+      description: "추가로 공유할 내용을 작성해주세요."
