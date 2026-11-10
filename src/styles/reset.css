@@ -8,8 +8,9 @@
 *,
 *::before,
 *::after {
-  /* font-family: var(--font-family);
-  font-weight: var(--font-weight-medium); */
+  font-family: var(--font-family);
+  font-weight: var(--font-weight-medium);
+  letter-spacing: var(--letter-spacing-base);
   margin: 0;
   padding: 0;
   box-sizing: border-box;

@@ -1,8 +1,47 @@
 /* palette.css
  * 색상 관련 변수 저장
  * 그림자, border 설정 관련 변수도 추가할 수 있습니다.
+ * Figma 변수 이름을 그대로 옮겼습니다. (예: text/primary → --color-text-primary)
 */
 :root {
   --color-white: #ffffff;
   --color-black: #000000;
+
+  /* brand */
+  --color-brand-navy: #0b1f66;
+  --color-brand-yellow: #ffd338;
+
+  /* text */
+  --color-text-primary: #0e1116;
+  --color-text-secondary: #3a4150;
+  --color-text-tertiary: #5b6475;
+  --color-text-brand: var(--color-brand-navy);
+  --color-text-inverse: var(--color-white);
+
+  /* surface */
+  --color-surface-base: var(--color-white);
+  --color-surface-muted: #f2f4f8;
+  --color-surface-sunken: #e6e9f0;
+  --color-surface-camera: #05070d;
+
+  /* border */
+  --color-border-strong: #0e1116;
+  --color-border-default: #8a92a3;
+  --color-border-subtle: #d5dae3;
+
+  /* status
+   * success는 흰 배경 위 글자색으로 쓰면 대비가 낮습니다. 글자에는 success-text를 쓰세요.
+   */
+  --color-status-success: #3ddc84;
+  --color-status-success-text: #0b6b35;
+  --color-status-warning: var(--color-brand-yellow);
+  --color-status-danger: #d92d20;
+
+  /* focus */
+  --color-focus-ring: #2e6bff;
+
+  /* radius */
+  --radius-sm: 12px;
+  --radius-md: 20px;
+  --radius-full: 999px;
 }
