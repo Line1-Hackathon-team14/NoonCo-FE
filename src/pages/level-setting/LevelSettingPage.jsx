@@ -35,7 +35,9 @@ function LevelSettingPage() {
         <div className='level-setting__content'>
           <Chip className='level-setting__chip'>2 / 2 단계</Chip>
           <h2 id='level-setting-question' className='level-setting__title'>
-            어떤 깊이로 설명해 드릴까요?
+            어떤 깊이로
+            <br />
+            설명해 드릴까요?
           </h2>
           <p className='level-setting__description'>마이페이지에서 언제든 바꿀 수 있어요.</p>
 
