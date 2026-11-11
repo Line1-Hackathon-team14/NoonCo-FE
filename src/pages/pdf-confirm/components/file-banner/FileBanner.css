@@ -1,0 +1,28 @@
+.file-banner {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 14px 16px;
+  /* Figma에 반경 변수가 없는 값(16px) */
+  border-radius: 16px;
+}
+
+.file-banner__icon {
+  flex-shrink: 0;
+}
+
+/* reset.css의 `*`가 요소마다 font-weight를 직접 지정하므로, 글자 스타일은 텍스트 요소에 준다 */
+.file-banner__text {
+  min-width: 0;
+  font: var(--font-label-m);
+}
+
+.file-banner--valid {
+  background-color: var(--color-status-success-soft);
+  color: var(--color-status-success-text);
+}
+
+.file-banner--error {
+  background-color: var(--color-status-danger-soft);
+  color: var(--color-status-danger-text);
+}

@@ -1,0 +1,45 @@
+.selected-file {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 20px;
+  border: 2.5px solid var(--color-border-strong);
+  border-radius: var(--radius-md);
+  background-color: var(--color-surface-base);
+}
+
+.selected-file--error {
+  border-color: var(--color-status-danger);
+}
+
+.selected-file__icon {
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  width: 60px;
+  height: 60px;
+  /* Figma에 반경 변수가 없는 값(16px) */
+  border-radius: 16px;
+  background-color: var(--color-brand-navy);
+  color: var(--color-text-inverse);
+}
+
+.selected-file__text {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+
+/* 긴 파일명은 어디서든 줄바꿈한다 */
+.selected-file__name {
+  font: var(--font-label-l);
+  color: var(--color-text-primary);
+  overflow-wrap: anywhere;
+}
+
+.selected-file__meta {
+  font: var(--font-body-m);
+  color: var(--color-text-secondary);
+}

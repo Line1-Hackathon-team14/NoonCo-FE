@@ -1,4 +1,6 @@
+import check from '../../assets/icons/check.svg?react'
 import chevronLeft from '../../assets/icons/chevron-left.svg?react'
+import file from '../../assets/icons/file.svg?react'
 import headphones from '../../assets/icons/headphones.svg?react'
 import info from '../../assets/icons/info.svg?react'
 import logout from '../../assets/icons/logout.svg?react'
@@ -6,11 +8,14 @@ import radio from '../../assets/icons/radio.svg?react'
 import radioChecked from '../../assets/icons/radio-checked.svg?react'
 import upload from '../../assets/icons/upload.svg?react'
 import volume from '../../assets/icons/volume.svg?react'
+import xCircle from '../../assets/icons/x-circle.svg?react'
 import logoNavy from '../../assets/logo/logo-navy.svg?react'
 
 export const iconMap = {
   'logo-navy': logoNavy,
+  check,
   'chevron-left': chevronLeft,
+  file,
   headphones,
   info,
   logout,
@@ -18,4 +23,5 @@ export const iconMap = {
   'radio-checked': radioChecked,
   upload,
   volume,
+  'x-circle': xCircle,
 }
