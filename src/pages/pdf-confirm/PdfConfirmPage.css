@@ -1,0 +1,38 @@
+.pdf-confirm {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  background-color: var(--color-surface-base);
+}
+
+.pdf-confirm__main {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-height: 0;
+}
+
+/* 내용이 길어지면(긴 파일명, 기기 글자 크기 확대 등) 이 영역만 스크롤하고 버튼은 아래에 고정한다 */
+.pdf-confirm__content {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 16px;
+  min-height: 0;
+  padding: 8px 16px 16px;
+  overflow-y: auto;
+}
+
+.pdf-confirm__title {
+  font: var(--font-title-l);
+  color: var(--color-text-primary);
+  word-break: keep-all;
+}
+
+.pdf-confirm__actions {
+  display: flex;
+  flex-direction: column;
+  flex-shrink: 0;
+  gap: 16px;
+  padding: 16px 16px 32px;
+}
