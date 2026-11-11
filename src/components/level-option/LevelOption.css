@@ -1,0 +1,68 @@
+.level-option {
+  /* 테두리 두께가 바뀌어도(2px → 4px) 안쪽 내용 위치가 움직이지 않도록 패딩에서 테두리만큼 뺀다 */
+  --level-option-border: 2px;
+
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  width: 100%;
+  min-height: 88px;
+  padding: calc(16px - var(--level-option-border)) calc(20px - var(--level-option-border));
+  border: var(--level-option-border) solid var(--color-border-default);
+  border-radius: var(--radius-md);
+  background-color: var(--color-surface-base);
+  cursor: pointer;
+}
+
+/* 선택 상태: 굵은 남색 테두리 + 노란 배경 + 채워진 라디오 (색만으로 구분하지 않는다) */
+.level-option--selected {
+  --level-option-border: 4px;
+
+  border-color: var(--color-brand-navy);
+  background-color: var(--color-brand-yellow);
+}
+
+/* 카드 전체를 덮는 네이티브 라디오. 보이지 않지만 포커스·선택·스크린 리더 동작을 맡는다 */
+.level-option__input {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  opacity: 0;
+  cursor: pointer;
+}
+
+.level-option:has(.level-option__input:focus-visible) {
+  outline: 3px solid var(--color-focus-ring);
+  outline-offset: 3px;
+}
+
+.level-option__radio {
+  flex-shrink: 0;
+  color: var(--color-border-default);
+}
+
+.level-option--selected .level-option__radio {
+  color: var(--color-brand-navy);
+}
+
+.level-option__text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.level-option__title {
+  font: var(--font-label-l);
+  color: var(--color-text-primary);
+}
+
+.level-option__description {
+  font: var(--font-body-m);
+  color: var(--color-text-secondary);
+  word-break: keep-all;
+  overflow-wrap: anywhere;
+}
