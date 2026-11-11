@@ -1,0 +1,61 @@
+.pdf-upload {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  background-color: var(--color-surface-base);
+}
+
+.pdf-upload__content {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 16px;
+  min-height: 0;
+  padding: 8px 16px 32px;
+  overflow-y: auto;
+}
+
+.pdf-upload__title {
+  font: var(--font-title-l);
+  color: var(--color-text-primary);
+  word-break: keep-all;
+}
+
+.pdf-upload__description {
+  font: var(--font-body-m);
+  color: var(--color-text-secondary);
+  word-break: keep-all;
+}
+
+.pdf-upload__status {
+  font: var(--font-label-m);
+  color: var(--color-text-primary);
+}
+
+.pdf-upload__error {
+  font: var(--font-label-m);
+  color: var(--color-status-danger);
+}
+
+.pdf-upload__info {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 18px;
+  border-radius: var(--radius-md);
+  background-color: var(--color-surface-muted);
+}
+
+.pdf-upload__info-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  font: var(--font-body-m);
+  color: var(--color-text-primary);
+}
+
+.pdf-upload__info-icon {
+  flex-shrink: 0;
+  margin-top: 2px;
+  color: var(--color-text-secondary);
+}
