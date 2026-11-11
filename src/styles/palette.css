@@ -34,8 +34,11 @@
    */
   --color-status-success: #3ddc84;
   --color-status-success-text: #0b6b35;
+  --color-status-success-soft: #def7e8; /* 성공 배너 배경 (Figma에 변수 없음) */
   --color-status-warning: var(--color-brand-yellow);
   --color-status-danger: #d92d20;
+  --color-status-danger-text: #b52318; /* 연한 빨강 배경 위 글자·아이콘 (Figma에 변수 없음) */
+  --color-status-danger-soft: #ffeae7; /* 오류 배너 배경 (Figma에 변수 없음) */
 
   /* focus */
   --color-focus-ring: #2e6bff;
