@@ -1,0 +1,54 @@
+.level-setting {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  background-color: var(--color-surface-base);
+}
+
+.level-setting__main {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-height: 0;
+}
+
+/* 내용이 길어지면(기기 글자 크기 확대 등) 이 영역만 스크롤하고 버튼은 아래에 고정한다 */
+.level-setting__content {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 14px;
+  min-height: 0;
+  padding: 8px 16px 16px;
+  overflow-y: auto;
+}
+
+.level-setting__chip {
+  align-self: flex-start;
+}
+
+.level-setting__title {
+  font: var(--font-title-l);
+  color: var(--color-text-primary);
+  word-break: keep-all;
+  text-wrap: balance;
+}
+
+.level-setting__description {
+  font: var(--font-body-m);
+  color: var(--color-text-secondary);
+}
+
+.level-setting__options {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.level-setting__actions {
+  display: flex;
+  flex-direction: column;
+  flex-shrink: 0;
+  gap: 14px;
+  padding: 16px 16px 32px;
+}
