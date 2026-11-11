@@ -17,7 +17,9 @@
   flex-shrink: 0;
 }
 
+/* reset.css의 `*`가 font-weight를 요소마다 직접 지정해서, 안쪽 span은 버튼의 굵기를 상속받지 못한다 */
 .button__label {
+  font: inherit;
   min-width: 0;
   word-break: keep-all;
   overflow-wrap: anywhere;
