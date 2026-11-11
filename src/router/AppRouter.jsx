@@ -4,6 +4,7 @@ import MainLayout from '../layout/main-layout/MainLayout'
 
 import HomePage from '../pages/home/HomePage'
 import LevelSettingPage from '../pages/level-setting/LevelSettingPage'
+import PdfUploadPage from '../pages/pdf-upload/PdfUploadPage'
 
 export const AppRouter = createBrowserRouter([
   {
@@ -17,6 +18,10 @@ export const AppRouter = createBrowserRouter([
       {
         path: 'signup/level',
         element: <LevelSettingPage />,
+      },
+      {
+        path: 'pdf',
+        element: <PdfUploadPage />,
       },
     ],
   },
