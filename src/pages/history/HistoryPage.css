@@ -1,0 +1,40 @@
+.history {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  background-color: var(--color-surface-base);
+}
+
+/* 목록이 길어지면 이 영역만 스크롤한다 */
+.history__content {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 12px;
+  min-height: 0;
+  padding: 8px 16px 32px;
+  overflow-y: auto;
+}
+
+.history__filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.history__group {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.history__group-title {
+  font: var(--font-label-m);
+  color: var(--color-text-secondary);
+}
+
+.history__list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
