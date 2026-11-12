@@ -4,6 +4,7 @@ import MainLayout from '../layout/main-layout/MainLayout'
 
 import HomePage from '../pages/home/HomePage'
 import LevelSettingPage from '../pages/level-setting/LevelSettingPage'
+import MyPage from '../pages/my-page/MyPage'
 import PdfConfirmPage from '../pages/pdf-confirm/PdfConfirmPage'
 import PdfUploadPage from '../pages/pdf-upload/PdfUploadPage'
 
@@ -27,6 +28,10 @@ export const AppRouter = createBrowserRouter([
       {
         path: 'pdf/confirm',
         element: <PdfConfirmPage />,
+      },
+      {
+        path: 'mypage',
+        element: <MyPage />,
       },
     ],
   },
