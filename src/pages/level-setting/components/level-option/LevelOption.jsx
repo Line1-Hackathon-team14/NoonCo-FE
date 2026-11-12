@@ -1,6 +1,6 @@
 import { useId } from 'react'
 
-import { Icon } from '../icon/Icon'
+import { Icon } from '../../../../components/icon/Icon'
 import './LevelOption.css'
 
 /**

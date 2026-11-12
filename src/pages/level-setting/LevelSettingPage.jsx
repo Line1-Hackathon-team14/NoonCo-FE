@@ -3,7 +3,7 @@ import { useEffect, useRef, useState } from 'react'
 import { AppBar } from '../../components/app-bar/AppBar'
 import { Button } from '../../components/button/Button'
 import { Chip } from '../../components/chip/Chip'
-import { LevelOption } from '../../components/level-option/LevelOption'
+import { LevelOption } from './components/level-option/LevelOption'
 import './LevelSettingPage.css'
 
 const PAGE_TITLE = '설명 난이도'
