@@ -1,0 +1,94 @@
+.history-item {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 18px 12px 18px 16px;
+  border: 1.5px solid var(--color-border-subtle);
+  border-radius: var(--radius-md);
+  background-color: var(--color-surface-base);
+}
+
+.history-item__main {
+  display: flex;
+  flex: 1;
+  align-items: center;
+  gap: 14px;
+  min-width: 0;
+}
+
+/* 행 전체를 눌러도 해설 화면으로 이동하도록 링크를 카드 전체로 넓힌다 */
+.history-item__main::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: var(--radius-md);
+}
+
+.history-item__main:focus-visible {
+  outline: none;
+}
+
+.history-item__main:focus-visible::after {
+  outline: 3px solid var(--color-focus-ring);
+  outline-offset: 3px;
+}
+
+.history-item__tile {
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  width: 52px;
+  height: 52px;
+  /* Figma에 반경 변수가 없는 값(16px) */
+  border-radius: 16px;
+}
+
+.history-item__tile--image {
+  background-color: var(--color-brand-yellow);
+  color: var(--color-brand-navy);
+}
+
+.history-item__tile--pdf {
+  background-color: var(--color-brand-navy);
+  color: var(--color-text-inverse);
+}
+
+.history-item__text {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+
+.history-item__title {
+  font: var(--font-label-m);
+  color: var(--color-text-primary);
+  overflow-wrap: anywhere;
+}
+
+.history-item__meta {
+  font: var(--font-caption);
+  color: var(--color-text-tertiary);
+}
+
+/* 오른쪽 ▶ 버튼: 행 전체 링크 위에 놓아 따로 눌리게 한다 */
+.history-item__replay {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  width: 56px;
+  height: 56px;
+  border-radius: var(--radius-full);
+  background-color: var(--color-brand-navy);
+  color: var(--color-text-inverse);
+}
+
+.history-item__replay:focus-visible {
+  outline: 3px solid var(--color-focus-ring);
+  outline-offset: 3px;
+}
