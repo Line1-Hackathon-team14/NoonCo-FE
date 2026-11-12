@@ -1,0 +1,41 @@
+.profile-card {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 20px;
+  /* Figma에 반경 변수가 없는 값(24px) */
+  border-radius: 24px;
+  background-color: var(--color-surface-muted);
+}
+
+.profile-card__avatar {
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  width: 64px;
+  height: 64px;
+  /* Figma에 반경 변수가 없는 값(32px) */
+  border-radius: 32px;
+  background-color: var(--color-brand-yellow);
+  color: var(--color-brand-navy);
+}
+
+.profile-card__text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.profile-card__name {
+  font: var(--font-title-m);
+  color: var(--color-text-primary);
+  overflow-wrap: anywhere;
+}
+
+.profile-card__email {
+  font: var(--font-body-l);
+  color: var(--color-text-tertiary);
+  overflow-wrap: anywhere;
+}

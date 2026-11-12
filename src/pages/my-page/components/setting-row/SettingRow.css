@@ -1,0 +1,73 @@
+.setting-row {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  width: 100%;
+  padding: 20px 16px 20px 18px;
+  text-align: left;
+}
+
+/* 컨테이너가 넘치는 부분을 잘라 내므로 포커스 링은 안쪽에 그린다 */
+.setting-row:focus-visible {
+  outline: 3px solid var(--color-focus-ring);
+  outline-offset: -3px;
+}
+
+.setting-row__icon {
+  flex-shrink: 0;
+  color: var(--color-text-primary);
+}
+
+.setting-row__label {
+  flex: 1;
+  min-width: 0;
+  font: var(--font-label-m);
+  color: var(--color-text-primary);
+}
+
+.setting-row__value {
+  flex-shrink: 0;
+  font: var(--font-body-m);
+  color: var(--color-text-secondary);
+  white-space: nowrap;
+}
+
+.setting-row__chevron {
+  flex-shrink: 0;
+  color: var(--color-text-primary);
+}
+
+/* 토글: 켜짐/꺼짐은 색뿐 아니라 동그라미 위치로도 구분한다 */
+.setting-row__switch {
+  position: relative;
+  flex-shrink: 0;
+  width: 60px;
+  height: 34px;
+  border-radius: var(--radius-full);
+  background-color: var(--color-border-default);
+}
+
+.setting-row__switch--on {
+  background-color: var(--color-brand-navy);
+}
+
+.setting-row__knob {
+  position: absolute;
+  top: 4px;
+  left: 4px;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background-color: var(--color-white);
+  transition: transform 0.15s;
+}
+
+.setting-row__switch--on .setting-row__knob {
+  transform: translateX(26px);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .setting-row__knob {
+    transition: none;
+  }
+}
