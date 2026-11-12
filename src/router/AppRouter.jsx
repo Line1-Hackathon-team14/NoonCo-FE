@@ -2,6 +2,7 @@ import { createBrowserRouter } from 'react-router-dom'
 
 import MainLayout from '../layout/main-layout/MainLayout'
 
+import HistoryPage from '../pages/history/HistoryPage'
 import HomePage from '../pages/home/HomePage'
 import LevelSettingPage from '../pages/level-setting/LevelSettingPage'
 import MyPage from '../pages/my-page/MyPage'
@@ -32,6 +33,10 @@ export const AppRouter = createBrowserRouter([
       {
         path: 'mypage',
         element: <MyPage />,
+      },
+      {
+        path: 'mypage/history',
+        element: <HistoryPage />,
       },
     ],
   },
