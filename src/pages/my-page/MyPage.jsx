@@ -14,9 +14,13 @@ import './MyPage.css'
 const PAGE_TITLE = '마이페이지'
 
 const DEFAULT_ERROR = '내 정보를 불러오지 못했어요. 다시 시도해 주세요.'
-const SPEED_ERROR = '말하기 속도를 저장하지 못했어요. 다시 시도해 주세요.'
+const SETTING_ERROR = '설정을 저장하지 못했어요. 다시 시도해 주세요.'
 const SPEEDS = [0.5, 1.0, 1.5, 2.0]
-const DIFFICULTY_LABELS = { EASY: '쉬움', NORMAL: '보통', HARD: '어려움' }
+const DIFFICULTY_OPTIONS = [
+  { value: 'EASY', label: '쉬움' },
+  { value: 'NORMAL', label: '보통' },
+  { value: 'HARD', label: '어려움' },
+]
 
 // 선택지는 0.5 · 1.0 · 1.5 · 2.0배. 서버에 다른 값(예: 1.2)이 저장돼 있으면 그 값도 보여 준다.
 const getSpeedOptions = (current) =>
@@ -33,8 +37,8 @@ function MyPage() {
   const [user, setUser] = useState(null)
   const [counts, setCounts] = useState(null)
   const [loggingOut, setLoggingOut] = useState(false)
-  const [savingSpeed, setSavingSpeed] = useState(false)
-  const [speedError, setSpeedError] = useState('')
+  const [saving, setSaving] = useState(false)
+  const [settingError, setSettingError] = useState('')
   // TODO: 저장 위치(FE localStorage 또는 BE)가 정해지면 저장한다. 그전에는 화면 상태로만 동작
   const [cameraGuide, setCameraGuide] = useState(true)
 
@@ -70,18 +74,19 @@ function MyPage() {
     setAttempt((value) => value + 1)
   }
 
-  const handleSpeedChange = async (value) => {
-    if (savingSpeed) return
-    setSavingSpeed(true)
-    setSpeedError('')
+  // 설정은 보낸 값만 바뀌므로 난이도·말하기 속도 중 바꾼 것 하나만 보낸다
+  const saveSetting = async (change) => {
+    if (saving) return
+    setSaving(true)
+    setSettingError('')
 
     try {
-      const saved = await updateSettings({ speechRate: Number(value) })
-      setUser((prev) => ({ ...prev, speechRate: saved.speechRate }))
+      const saved = await updateSettings(change)
+      setUser((prev) => ({ ...prev, ...saved }))
     } catch (error) {
-      setSpeedError(error.message || SPEED_ERROR)
+      setSettingError(error.message || SETTING_ERROR)
     } finally {
-      setSavingSpeed(false)
+      setSaving(false)
     }
   }
 
@@ -125,12 +130,18 @@ function MyPage() {
           </h2>
           <ul className='my-page__settings' aria-labelledby='my-page-settings'>
             <li>
-              {/* 설명 난이도·말하기 속도: 이동할 화면이 Figma에 없어 아직 연결하지 않는다 */}
-              <SettingRow
-                icon='sliders'
-                label='설명 난이도'
-                value={user ? DIFFICULTY_LABELS[user.difficulty] : ''}
-              />
+              {user ? (
+                <SettingRow
+                  icon='sliders'
+                  label='설명 난이도'
+                  options={DIFFICULTY_OPTIONS}
+                  selected={user.difficulty}
+                  onSelect={(difficulty) => saveSetting({ difficulty })}
+                  disabled={saving}
+                />
+              ) : (
+                <SettingRow icon='sliders' label='설명 난이도' />
+              )}
             </li>
             <li>
               {user ? (
@@ -139,8 +150,8 @@ function MyPage() {
                   label='말하기 속도'
                   options={getSpeedOptions(user.speechRate)}
                   selected={user.speechRate.toFixed(1)}
-                  onSelect={handleSpeedChange}
-                  disabled={savingSpeed}
+                  onSelect={(speed) => saveSetting({ speechRate: Number(speed) })}
+                  disabled={saving}
                 />
               ) : (
                 <SettingRow icon='volume' label='말하기 속도' />
@@ -155,9 +166,9 @@ function MyPage() {
               />
             </li>
           </ul>
-          {speedError && (
+          {settingError && (
             <p role='alert' className='my-page__error-message'>
-              {speedError}
+              {settingError}
             </p>
           )}
         </div>

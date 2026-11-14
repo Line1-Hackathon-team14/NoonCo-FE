@@ -47,10 +47,6 @@
   outline-offset: -3px;
 }
 
-.setting-row__chevron--down {
-  transform: rotate(90deg);
-}
-
 .setting-row__select {
   position: absolute;
   inset: 0;

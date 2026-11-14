@@ -51,7 +51,7 @@ export const SettingRow = ({
           name='chevron-right'
           width={24}
           height={24}
-          className='setting-row__chevron setting-row__chevron--down'
+          className='setting-row__chevron'
           aria-hidden='true'
         />
         <select
