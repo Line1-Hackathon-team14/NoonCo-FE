@@ -19,7 +19,7 @@ const ERROR_MESSAGES = {
 }
 
 /** 문장과 줄바꿈으로 나누고 긴 문장은 최대 240자씩 분리한다. */
-const splitText = (text) => {
+export const splitText = (text) => {
   if (typeof text !== 'string' || !text.trim()) return []
 
   const sentences = text.trim().match(/[\s\S]+?(?:[.!?。！？](?=\s|$)|\n+|$)/gu) ?? []
