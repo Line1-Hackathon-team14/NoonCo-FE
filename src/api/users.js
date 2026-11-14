@@ -2,6 +2,13 @@ import { apiRequest } from './client'
 import { readSession, saveSession } from './session'
 
 /**
+ * 내 정보 조회
+ *
+ * @returns {Promise<{ id: number, name: string, email: string, difficulty: string, speechRate: number }>}
+ */
+export const getMe = () => apiRequest('/users/me')
+
+/**
  * 내 설정 변경 (보낸 값만 바뀐다. 최소 1개)
  * - 저장된 로그인 정보의 user도 새 설정으로 맞춘다.
  *
