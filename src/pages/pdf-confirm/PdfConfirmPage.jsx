@@ -5,7 +5,7 @@ import { deleteMaterial } from '../../api/materials'
 import { AppBar } from '../../components/app-bar/AppBar'
 import { Button } from '../../components/button/Button'
 import { formatFileSize } from '../../utils/formatFileSize'
-import { FileBanner } from './components/file-banner/FileBanner'
+import { FileBanner } from '../../components/file-banner/FileBanner'
 import { SelectedFile } from './components/selected-file/SelectedFile'
 import './PdfConfirmPage.css'
 

@@ -1,0 +1,78 @@
+.gesture-card {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  width: 100%;
+  padding: 20px;
+  border: 2px solid var(--color-border-strong);
+  border-radius: var(--radius-md);
+  background-color: var(--color-surface-base);
+  text-align: left;
+}
+
+.gesture-card:focus-visible {
+  outline: 3px solid var(--color-focus-ring);
+  outline-offset: 3px;
+}
+
+/* 재생 중인 해설: 색뿐 아니라 굵은 테두리로도 구분한다. 테두리가 굵어진 만큼 안쪽 여백을 줄여 크기를 유지한다 */
+.gesture-card--playing {
+  padding: 18px;
+  border-width: 4px;
+  border-color: var(--color-brand-navy);
+  background-color: var(--color-brand-yellow);
+}
+
+.gesture-card--unavailable {
+  opacity: 0.45;
+}
+
+.gesture-card__tile {
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  width: 56px;
+  height: 56px;
+  /* Figma에 반경 변수가 없는 값(16px) */
+  border-radius: 16px;
+  background-color: var(--color-surface-muted);
+  color: var(--color-text-primary);
+}
+
+.gesture-card--playing .gesture-card__tile {
+  background-color: var(--color-brand-navy);
+  color: var(--color-text-inverse);
+}
+
+.gesture-card__text {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 6px;
+  min-width: 0;
+}
+
+/* reset.css의 `*`가 요소마다 font-weight를 직접 지정하므로, 글자 스타일은 텍스트 요소에 준다 */
+.gesture-card__gesture {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 12px 4px 10px;
+  border-radius: var(--radius-full);
+  background-color: var(--color-brand-navy);
+  color: var(--color-text-inverse);
+  font: var(--font-caption);
+  font-weight: var(--font-weight-bold);
+}
+
+.gesture-card__title {
+  font: var(--font-label-l);
+  color: var(--color-text-primary);
+}
+
+.gesture-card__description {
+  font: var(--font-body-m);
+  color: var(--color-text-secondary);
+}
