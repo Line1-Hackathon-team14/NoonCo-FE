@@ -1,5 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 
+import { uploadPdf } from '../../api/materials'
 import { AppBar } from '../../components/app-bar/AppBar'
 import { Icon } from '../../components/icon/Icon'
 import { validatePdfFile } from '../../utils/pdf'
@@ -7,14 +9,15 @@ import { FilePicker } from './components/file-picker/FilePicker'
 import './PdfUploadPage.css'
 
 const PAGE_TITLE = 'PDF 강의자료'
+const DEFAULT_ERROR = '파일을 올리지 못했어요. 다시 시도해 주세요.'
 
 const INFO_ITEMS = ['글자가 있는 PDF를 읽어 해설해요', '사진을 스캔한 PDF는 아직 읽기 어려워요']
 
 function PdfUploadPage() {
+  const navigate = useNavigate()
   const titleRef = useRef(null)
   const [errorMessage, setErrorMessage] = useState('')
-  // TODO(#32): 업로드 API 연결 시 setIsUploading으로 갱신
-  const [isUploading] = useState(false)
+  const [isUploading, setIsUploading] = useState(false)
 
   // 페이지 진입 시 화면 이름을 알리고 h1(AppBar 제목)로 포커스를 옮긴다.
   useEffect(() => {
@@ -22,12 +25,35 @@ function PdfUploadPage() {
     titleRef.current?.focus()
   }, [])
 
-  const handleSelect = (file) => {
+  const handleSelect = async (file) => {
+    if (isUploading) return
     const message = validatePdfFile(file)
     setErrorMessage(message ?? '')
     if (message) return
 
-    // TODO(#32): POST /materials/pdfs 업로드 후 /pdf/confirm으로 이동
+    setIsUploading(true)
+    try {
+      const material = await uploadPdf(file)
+      // 09의 파일명은 사용자가 고른 File.name을 쓴다. 업로드 응답의 title은 항상 null이다.
+      navigate('/pdf/confirm', {
+        state: {
+          materialId: material.materialId,
+          fileName: file.name,
+          fileSize: material.fileSize ?? file.size,
+          pageCount: material.pageCount,
+        },
+      })
+    } catch (error) {
+      if (error.code === 'PDF_TOO_MANY_PAGES') {
+        // 쪽수 초과는 08이 아니라 09-1 오류 화면에서 안내한다.
+        navigate('/pdf/confirm', {
+          state: { fileName: file.name, fileSize: file.size, error: { msg: error.message } },
+        })
+        return
+      }
+      setErrorMessage(error.message || DEFAULT_ERROR)
+      setIsUploading(false)
+    }
   }
 
   return (
