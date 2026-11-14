@@ -1,5 +1,9 @@
 import { useEffect, useRef, useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 
+import { logout } from '../../api/auth'
+import { getMaterialCounts } from '../../api/materials'
+import { getMe } from '../../api/users'
 import { AppBar } from '../../components/app-bar/AppBar'
 import { Button } from '../../components/button/Button'
 import { HistoryLink } from './components/history-link/HistoryLink'
@@ -9,13 +13,18 @@ import './MyPage.css'
 
 const PAGE_TITLE = '마이페이지'
 
-// TODO(#94): API 연결 시 GET /users/me, GET /materials/counts 값으로 교체
-const TEMP_USER = { name: 'OOO', email: 'example@email.com' }
-const TEMP_COUNTS = { image: 8, pdf: 4 }
-const TEMP_SETTINGS = { difficulty: '보통', speechRate: '1.2배' }
+const DEFAULT_ERROR = '내 정보를 불러오지 못했어요. 다시 시도해 주세요.'
+const DIFFICULTY_LABELS = { EASY: '쉬움', NORMAL: '보통', HARD: '어려움' }
 
 function MyPage() {
+  const navigate = useNavigate()
   const titleRef = useRef(null)
+  const [attempt, setAttempt] = useState(0)
+  const [status, setStatus] = useState('loading')
+  const [errorMessage, setErrorMessage] = useState('')
+  const [user, setUser] = useState(null)
+  const [counts, setCounts] = useState(null)
+  const [loggingOut, setLoggingOut] = useState(false)
   // TODO: 저장 위치(FE localStorage 또는 BE)가 정해지면 저장한다. 그전에는 화면 상태로만 동작
   const [cameraGuide, setCameraGuide] = useState(true)
 
@@ -25,8 +34,38 @@ function MyPage() {
     titleRef.current?.focus()
   }, [])
 
-  // TODO(#94): POST /auth/logout → 토큰 삭제 → 로그인 화면
-  const handleLogout = () => {}
+  useEffect(() => {
+    let ignore = false
+
+    Promise.all([getMe(), getMaterialCounts()])
+      .then(([me, materialCounts]) => {
+        if (ignore) return
+        setUser(me)
+        setCounts(materialCounts)
+        setStatus('ready')
+      })
+      .catch((error) => {
+        if (ignore) return
+        setErrorMessage(error.message || DEFAULT_ERROR)
+        setStatus('error')
+      })
+
+    return () => {
+      ignore = true
+    }
+  }, [attempt])
+
+  const handleRetry = () => {
+    setStatus('loading')
+    setAttempt((value) => value + 1)
+  }
+
+  const handleLogout = async () => {
+    if (loggingOut) return
+    setLoggingOut(true)
+    await logout()
+    navigate('/', { replace: true })
+  }
 
   return (
     <div className='my-page'>
@@ -34,12 +73,27 @@ function MyPage() {
 
       <main className='my-page__main'>
         <div className='my-page__content'>
-          <ProfileCard name={TEMP_USER.name} email={TEMP_USER.email} />
-          <HistoryLink
-            to='/mypage/history'
-            imageCount={TEMP_COUNTS.image}
-            pdfCount={TEMP_COUNTS.pdf}
-          />
+          {status === 'loading' && (
+            <p role='status' className='my-page__status'>
+              내 정보를 불러오는 중이에요.
+            </p>
+          )}
+          {status === 'error' && (
+            <div className='my-page__error'>
+              <p role='alert' className='my-page__error-message'>
+                {errorMessage}
+              </p>
+              <Button variant='secondary' onClick={handleRetry}>
+                다시 시도
+              </Button>
+            </div>
+          )}
+          {status === 'ready' && (
+            <>
+              <ProfileCard name={user.name} email={user.email} />
+              <HistoryLink to='/mypage/history' imageCount={counts.image} pdfCount={counts.pdf} />
+            </>
+          )}
 
           <h2 id='my-page-settings' className='my-page__section-title'>
             설정
@@ -47,10 +101,18 @@ function MyPage() {
           <ul className='my-page__settings' aria-labelledby='my-page-settings'>
             <li>
               {/* 설명 난이도·말하기 속도: 이동할 화면이 Figma에 없어 아직 연결하지 않는다 */}
-              <SettingRow icon='sliders' label='설명 난이도' value={TEMP_SETTINGS.difficulty} />
+              <SettingRow
+                icon='sliders'
+                label='설명 난이도'
+                value={user ? DIFFICULTY_LABELS[user.difficulty] : ''}
+              />
             </li>
             <li>
-              <SettingRow icon='volume' label='말하기 속도' value={TEMP_SETTINGS.speechRate} />
+              <SettingRow
+                icon='volume'
+                label='말하기 속도'
+                value={user ? `${Number(user.speechRate).toFixed(1)}배` : ''}
+              />
             </li>
             <li>
               <SettingRow
@@ -64,7 +126,12 @@ function MyPage() {
         </div>
 
         <div className='my-page__actions'>
-          <Button variant='danger-outline' icon='logout' onClick={handleLogout}>
+          <Button
+            variant='danger-outline'
+            icon='logout'
+            onClick={handleLogout}
+            disabled={loggingOut}
+          >
             로그아웃
           </Button>
         </div>
