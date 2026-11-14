@@ -1,7 +1,8 @@
-import { createBrowserRouter, Link } from 'react-router-dom'
+import { createBrowserRouter } from 'react-router-dom'
 
 import MainLayout from '../layout/main-layout/MainLayout'
 
+import CameraPage from '../pages/camera/CameraPage'
 import HistoryPage from '../pages/history/HistoryPage'
 import HomePage from '../pages/home/HomePage'
 import LevelSettingPage from '../pages/level-setting/LevelSettingPage'
@@ -39,22 +40,7 @@ export const AppRouter = createBrowserRouter([
       },
       {
         path: 'camera',
-        // 카메라 페이지 구현 후 실제 컴포넌트로 교체한다.
-        element: (
-          <main className='home'>
-            <div className='home__content'>
-              <div className='home__status'>
-                <h1 className='home__title'>카메라</h1>
-
-                <p className='home__status-description'>촬영 기능은 아직 제공되지 않습니다.</p>
-
-                <Link to='/home' className='button button--primary'>
-                  <span className='button__label'>홈으로 돌아가기</span>
-                </Link>
-              </div>
-            </div>
-          </main>
-        ),
+        element: <CameraPage />,
       },
       {
         path: 'pdf',
