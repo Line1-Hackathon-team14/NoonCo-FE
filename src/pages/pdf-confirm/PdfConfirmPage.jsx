@@ -4,6 +4,7 @@ import { Navigate, useLocation, useNavigate } from 'react-router-dom'
 import { deleteMaterial } from '../../api/materials'
 import { AppBar } from '../../components/app-bar/AppBar'
 import { Button } from '../../components/button/Button'
+import { createPdfAnalysis } from '../../state/pdfAnalysis'
 import { formatFileSize } from '../../utils/formatFileSize'
 import { FileBanner } from '../../components/file-banner/FileBanner'
 import { SelectedFile } from './components/selected-file/SelectedFile'
@@ -64,8 +65,11 @@ function PdfConfirmPage() {
     navigate(-1)
   }
 
-  // TODO(07): 07 분석 화면(/analyzing/:materialId)으로 이동
-  const handleListen = () => {}
+  // 올린 PDF의 분석 작업을 만들고 분석 화면으로 이동한다. (09-1 오류 화면에는 이 버튼이 없다)
+  const handleListen = () => {
+    const jobId = createPdfAnalysis({ materialId: state.materialId, pageCount })
+    navigate(`/pdf/analyzing/${jobId}`)
+  }
 
   return (
     <div className='pdf-confirm'>

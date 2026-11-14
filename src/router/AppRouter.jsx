@@ -9,6 +9,7 @@ import HomePage from '../pages/home/HomePage'
 import LevelSettingPage from '../pages/level-setting/LevelSettingPage'
 import LoginPage from '../pages/login/LoginPage'
 import MyPage from '../pages/my-page/MyPage'
+import PdfAnalysisPage from '../pages/pdf-analysis/PdfAnalysisPage'
 import PdfConfirmPage from '../pages/pdf-confirm/PdfConfirmPage'
 import PdfUploadPage from '../pages/pdf-upload/PdfUploadPage'
 import SignupPage from '../pages/signup/SignupPage'
@@ -55,6 +56,10 @@ export const AppRouter = createBrowserRouter([
       {
         path: 'pdf',
         element: <PdfUploadPage />,
+      },
+      {
+        path: 'pdf/analyzing/:jobId',
+        element: <PdfAnalysisPage />,
       },
       {
         path: 'pdf/confirm',
