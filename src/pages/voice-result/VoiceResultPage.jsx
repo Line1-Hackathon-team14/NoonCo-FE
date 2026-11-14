@@ -267,78 +267,86 @@ function VoiceResultPage() {
           <Chip>{difficultyLabel}</Chip>
         </div>
 
-        <Transcript
-          heading={heading}
-          error={hasError}
-          previous={index > 0 ? sentences[index - 1] : ''}
-          current={index >= 0 ? sentences[index] : ''}
-          placeholder='화면을 한 번 탭하거나 재생 버튼을 눌러 요약을 들어 보세요.'
-        />
+        {/* 재생 상태·해설 본문은 앱이 직접 TTS로 관리한다. 공통 화면 안내(VoiceGuide)가 읽어 해설을 끊지 않게 제외한다 */}
+        <div data-voice-ignore className='voice-result__playback'>
+          <Transcript
+            heading={heading}
+            error={hasError}
+            previous={index > 0 ? sentences[index - 1] : ''}
+            current={index >= 0 ? sentences[index] : ''}
+            placeholder='화면을 한 번 탭하거나 재생 버튼을 눌러 요약을 들어 보세요.'
+          />
 
-        {(hasError || unsupported) && (
-          <FileBanner variant='error'>
-            {unsupported ? (
-              '이 브라우저는 음성 재생을 지원하지 않아요.'
-            ) : (
-              <>
-                해설이 중간에 끊겼어요.
-                <br />
-                &apos;다시 듣기&apos;로 처음부터 들어 보세요.
-                {tts.error?.message && (
-                  <>
-                    <br />
-                    {tts.error.message}
-                  </>
-                )}
-              </>
-            )}
-          </FileBanner>
-        )}
+          {(hasError || unsupported) && (
+            <FileBanner variant='error'>
+              {unsupported ? (
+                '이 브라우저는 음성 재생을 지원하지 않아요.'
+              ) : (
+                <>
+                  해설이 중간에 끊겼어요.
+                  <br />
+                  &apos;다시 듣기&apos;로 처음부터 들어 보세요.
+                  {tts.error?.message && (
+                    <>
+                      <br />
+                      {tts.error.message}
+                    </>
+                  )}
+                </>
+              )}
+            </FileBanner>
+          )}
 
-        <div className='voice-result__player'>
-          <div
-            className={`voice-result__progress${hasError ? ' voice-result__progress--error' : ''}`}
-            aria-hidden='true'
-          >
-            <div className='voice-result__progress-fill' style={{ width: `${progress}%` }} />
-          </div>
-
-          <div className='voice-result__controls'>
-            {hasError ? (
-              <>
-                <PlayerControl variant='accent' icon='replay' label='다시 듣기' onClick={restart} />
-                <PlayerControl variant='primary' icon='play' label='이어 듣기' disabled />
-              </>
-            ) : (
-              <>
-                <PlayerControl
-                  icon='replay'
-                  label='처음부터'
-                  disabled={unsupported}
-                  onClick={restart}
-                />
-                <PlayerControl
-                  variant='primary'
-                  icon={speaking ? 'pause' : 'play'}
-                  label={speaking ? '일시정지' : '재생'}
-                  disabled={unsupported}
-                  onClick={togglePlay}
-                />
-              </>
-            )}
-            <PlayerControl
-              label='말하기 속도'
-              ariaLabel={`말하기 속도 ${rate.toFixed(1)}배, 누르면 바뀌어요`}
-              onClick={changeRate}
+          <div className='voice-result__player'>
+            <div
+              className={`voice-result__progress${hasError ? ' voice-result__progress--error' : ''}`}
+              aria-hidden='true'
             >
-              {rate.toFixed(1)}×
-            </PlayerControl>
-          </div>
-        </div>
+              <div className='voice-result__progress-fill' style={{ width: `${progress}%` }} />
+            </div>
 
-        <p role='status' className='voice-result__notice'>
-          {notice}
-        </p>
+            <div className='voice-result__controls'>
+              {hasError ? (
+                <>
+                  <PlayerControl
+                    variant='accent'
+                    icon='replay'
+                    label='다시 듣기'
+                    onClick={restart}
+                  />
+                  <PlayerControl variant='primary' icon='play' label='이어 듣기' disabled />
+                </>
+              ) : (
+                <>
+                  <PlayerControl
+                    icon='replay'
+                    label='처음부터'
+                    disabled={unsupported}
+                    onClick={restart}
+                  />
+                  <PlayerControl
+                    variant='primary'
+                    icon={speaking ? 'pause' : 'play'}
+                    label={speaking ? '일시정지' : '재생'}
+                    disabled={unsupported}
+                    onClick={togglePlay}
+                  />
+                </>
+              )}
+              <PlayerControl
+                label='말하기 속도'
+                ariaLabel={`말하기 속도 ${rate.toFixed(1)}배, 누르면 바뀌어요`}
+                onClick={changeRate}
+              >
+                {rate.toFixed(1)}×
+              </PlayerControl>
+            </div>
+          </div>
+
+          <p role='status' className='voice-result__notice'>
+            {notice}
+          </p>
+        </div>
 
         <h3 className='voice-result__gesture-header'>화면 어디서나 탭으로 조작</h3>
         <GestureCard

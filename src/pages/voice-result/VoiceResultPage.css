@@ -52,6 +52,12 @@
   gap: 8px;
 }
 
+.voice-result__playback {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
 .voice-result__player {
   display: flex;
   flex-direction: column;
