@@ -6,7 +6,9 @@ import file from '../../assets/icons/file.svg?react'
 import headphones from '../../assets/icons/headphones.svg?react'
 import history from '../../assets/icons/history.svg?react'
 import info from '../../assets/icons/info.svg?react'
+import lock from '../../assets/icons/lock.svg?react'
 import logout from '../../assets/icons/logout.svg?react'
+import mail from '../../assets/icons/mail.svg?react'
 import play from '../../assets/icons/play.svg?react'
 import radio from '../../assets/icons/radio.svg?react'
 import radioChecked from '../../assets/icons/radio-checked.svg?react'
@@ -28,7 +30,9 @@ export const iconMap = {
   headphones,
   history,
   info,
+  lock,
   logout,
+  mail,
   play,
   radio,
   'radio-checked': radioChecked,

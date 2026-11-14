@@ -1,0 +1,250 @@
+.login {
+  width: 100%;
+  height: 100%;
+  min-width: 0;
+  min-height: 0;
+  overflow: hidden;
+  background-color: var(--color-surface-base);
+  color: var(--color-text-primary);
+}
+
+.login__content {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  height: 100%;
+  min-height: 0;
+  padding: calc(16px + env(safe-area-inset-top, 0px)) 16px
+    calc(16px + env(safe-area-inset-bottom, 0px));
+}
+
+.login__header {
+  display: flex;
+  flex: 0 0 auto;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.login__logo {
+  width: clamp(48px, 10svh, 92px);
+  height: clamp(48px, 10svh, 92px);
+  flex-shrink: 0;
+  border-radius: 20px;
+  overflow: hidden;
+}
+
+.login__intro {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.login__title {
+  font: var(--font-display-l);
+}
+
+/* 화면 진입 안내용 제목의 테두리만 숨긴다. */
+.login__title:focus {
+  outline: none;
+}
+
+.login__description {
+  color: var(--color-text-secondary);
+  font: var(--font-body-l);
+}
+
+/* 부모 높이에서 남은 공간만 사용한다. */
+.login__form {
+  display: flex;
+  flex: 1 1 0;
+  flex-direction: column;
+  min-width: 0;
+  min-height: 0;
+  gap: 12px;
+  margin-top: clamp(12px, 2svh, 24px);
+}
+
+/* 공간이 부족한 경우 입력 영역 안에서만 스크롤한다. */
+.login__fields {
+  display: flex;
+  flex: 1 1 0;
+  flex-direction: column;
+  min-width: 0;
+  min-height: 0;
+  gap: 16px;
+  padding: 4px;
+  margin: 0 -4px;
+  overflow-y: auto;
+  overscroll-behavior-y: contain;
+  scroll-padding-block: 8px;
+}
+
+/* 세 번째 행은 오류가 없어도 한 줄 높이를 유지한다. */
+.login__field {
+  display: grid;
+  flex-shrink: 0;
+  grid-template-columns: minmax(0, 1fr);
+  grid-template-rows: auto auto minmax(1.375rem, auto);
+  row-gap: 8px;
+  min-width: 0;
+}
+
+.login__label {
+  font: var(--font-label-m);
+}
+
+.login__input-wrap {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+  min-height: 64px;
+  padding: 0 18px;
+  border: 2px solid var(--color-border-default);
+  border-radius: var(--radius-sm);
+  background-color: var(--color-surface-base);
+}
+
+.login__input-wrap:focus-within {
+  border-color: var(--color-focus-ring);
+  box-shadow: inset 0 0 0 1px var(--color-focus-ring);
+}
+
+.login__input-wrap--invalid {
+  border-color: var(--color-status-danger);
+}
+
+.login__input-icon {
+  flex-shrink: 0;
+}
+
+.login__input {
+  display: block;
+  width: 100%;
+  min-width: 0;
+  min-height: 60px;
+  padding: 14px 0;
+  border: 0;
+  outline: none;
+  background: transparent;
+  color: var(--color-text-primary);
+  font: var(--font-body-l);
+  user-select: text;
+  -webkit-user-select: text;
+}
+
+.login__input::placeholder {
+  color: var(--color-text-tertiary);
+  opacity: 1;
+}
+
+.login__error {
+  grid-row: 3;
+  color: var(--color-status-danger-text);
+  font: var(--font-caption);
+  overflow-wrap: anywhere;
+}
+
+/* 하단 영역은 줄어들지 않으며 오류 공간을 미리 확보한다. */
+.login__actions {
+  position: relative;
+  display: flex;
+  flex: 0 0 auto;
+  flex-direction: column;
+  gap: 16px;
+  min-width: 0;
+  padding-top: 72px;
+}
+
+/* 오류 표시 여부가 하단 영역 높이를 바꾸지 않는다. */
+.login__message {
+  position: absolute;
+  top: 0;
+  right: 0;
+  left: 0;
+  max-height: 64px;
+  padding: 8px 12px;
+  overflow-y: auto;
+  overscroll-behavior-y: contain;
+  border: 1px solid var(--color-status-danger);
+  border-radius: var(--radius-sm);
+  background-color: var(--color-status-danger-soft);
+  color: var(--color-status-danger-text);
+  font: var(--font-caption);
+  word-break: keep-all;
+  overflow-wrap: anywhere;
+}
+
+.login__signup {
+  text-decoration: none;
+}
+
+.login__tip {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  color: var(--color-text-tertiary);
+  font: var(--font-caption);
+}
+
+.login__tip svg {
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+
+.login__tip span {
+  min-width: 0;
+  font: inherit;
+  word-break: keep-all;
+  overflow-wrap: anywhere;
+}
+
+.login__message:focus-visible {
+  outline: 3px solid var(--color-focus-ring);
+  outline-offset: 2px;
+}
+
+.login__sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  border: 0;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+/* 키보드 등으로 화면이 낮아지면 소개 영역을 간소화한다. */
+@media (max-height: 600px) {
+  .login__header {
+    flex-direction: row;
+    align-items: center;
+  }
+
+  .login__logo {
+    width: 48px;
+    height: 48px;
+    border-radius: var(--radius-sm);
+  }
+
+  .login__title {
+    font: var(--font-title-l);
+  }
+
+  .login__description {
+    display: none;
+  }
+
+  .login__actions {
+    gap: 8px;
+  }
+}
+
+@media (forced-colors: active) {
+  .login__input-wrap:focus-within {
+    outline: 3px solid Highlight;
+    outline-offset: 2px;
+  }
+}

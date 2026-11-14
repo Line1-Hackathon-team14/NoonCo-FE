@@ -1,0 +1,195 @@
+.signup-agreements {
+  min-width: 0;
+  padding: 0;
+  border: 0;
+}
+
+.signup-agreements__legend {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+.signup-agreements__card {
+  padding: 8px 18px;
+  border-radius: var(--radius-md);
+  background-color: var(--color-surface-muted);
+}
+
+.signup-agreements__all,
+.signup-agreements__label {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+  cursor: pointer;
+}
+
+.signup-agreements__all {
+  min-height: 52px;
+  padding: 12px 0;
+  color: var(--color-text-primary);
+  font: var(--font-label-l);
+}
+
+.signup-agreements__all span,
+.signup-agreements__label span {
+  min-width: 0;
+  font: inherit;
+  word-break: keep-all;
+  overflow-wrap: anywhere;
+}
+
+.signup-agreements__checkbox {
+  flex-shrink: 0;
+  width: 28px;
+  height: 28px;
+  margin: 0;
+  accent-color: var(--color-brand-navy);
+  cursor: pointer;
+}
+
+.signup-agreements__divider {
+  height: 1.5px;
+  background-color: var(--color-border-subtle);
+}
+
+.signup-agreements__row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 52px;
+}
+
+.signup-agreements__label {
+  flex: 1;
+  align-self: stretch;
+  padding: 12px 0;
+  color: var(--color-text-secondary);
+  font: var(--font-body-m);
+}
+
+.signup-agreements__view {
+  flex-shrink: 0;
+  min-width: 44px;
+  min-height: 44px;
+  color: var(--color-text-brand);
+  font: var(--font-label-m);
+}
+
+.signup-agreements__error {
+  margin-top: 8px;
+  color: var(--color-status-danger-text);
+  font: var(--font-caption);
+  overflow-wrap: anywhere;
+}
+
+.signup-agreements__checkbox:focus-visible,
+.signup-agreements__view:focus-visible {
+  outline: 3px solid var(--color-focus-ring);
+  outline-offset: 3px;
+}
+
+/* 네이티브 dialog가 팝업 바깥의 조작을 막는다. */
+.signup-terms-dialog {
+  position: fixed;
+  inset: 0;
+  width: calc(100% - 32px);
+  max-width: 418px;
+  max-height: calc(100svh - 32px);
+  margin: auto;
+  padding: 0;
+  overflow: hidden;
+  border: 1px solid var(--color-border-subtle);
+  border-radius: var(--radius-md);
+  background-color: var(--color-surface-base);
+  color: var(--color-text-primary);
+}
+
+.signup-terms-dialog::backdrop {
+  background-color: rgb(0 0 0 / 50%);
+}
+
+.signup-terms-dialog__layout {
+  display: flex;
+  flex-direction: column;
+  max-height: calc(100svh - 34px);
+  min-height: 0;
+}
+
+.signup-terms-dialog__header {
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--color-border-subtle);
+}
+
+.signup-terms-dialog__title {
+  min-width: 0;
+  font: var(--font-title-m);
+  word-break: keep-all;
+  overflow-wrap: anywhere;
+}
+
+.signup-terms-dialog__close {
+  flex-shrink: 0;
+  min-width: 44px;
+  min-height: 44px;
+  color: var(--color-text-brand);
+  font: var(--font-label-m);
+}
+
+.signup-terms-dialog__body {
+  min-height: 0;
+  padding: 20px;
+  overflow-y: auto;
+  overscroll-behavior-y: contain;
+}
+
+.signup-terms-dialog__notice {
+  padding: 12px;
+  border-radius: var(--radius-sm);
+  background-color: var(--color-surface-muted);
+  color: var(--color-text-secondary);
+  font: var(--font-caption);
+}
+
+.signup-terms-dialog__section {
+  margin-top: 24px;
+}
+
+.signup-terms-dialog__section h3 {
+  margin-bottom: 8px;
+  font: var(--font-label-m);
+}
+
+.signup-terms-dialog__section p {
+  color: var(--color-text-secondary);
+  font: var(--font-body-m);
+  word-break: keep-all;
+  overflow-wrap: anywhere;
+  user-select: text;
+  -webkit-user-select: text;
+}
+
+.signup-terms-dialog__footer {
+  flex-shrink: 0;
+  padding: 16px 20px 20px;
+  border-top: 1px solid var(--color-border-subtle);
+}
+
+.signup-terms-dialog__close:focus-visible {
+  outline: 3px solid var(--color-focus-ring);
+  outline-offset: 2px;
+}
+
+.signup-terms-dialog__body:focus-visible {
+  outline: 3px solid var(--color-focus-ring);
+  outline-offset: -3px;
+}
