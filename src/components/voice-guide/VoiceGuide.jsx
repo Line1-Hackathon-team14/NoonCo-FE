@@ -75,7 +75,6 @@ export default function VoiceGuide() {
 
   useEffect(() => {
     const root = document.querySelector('.mainlayout__page')
-
     if (!root) return
 
     let timer
@@ -90,14 +89,11 @@ export default function VoiceGuide() {
       }
 
       const current = readScreen(root)
-
       const changed = all ? current : current.filter((text) => !previous.includes(text))
 
       previous = current
 
-      if (changed.length) {
-        speak(changed.join('. '))
-      }
+      if (changed.length) speak(changed.join('. '))
     }
 
     const schedule = () => {
@@ -158,9 +154,12 @@ export default function VoiceGuide() {
       }
     }
 
-    /* 파일 탐색기가 열리면 서비스 안내를 멈춘다. */
+    /* 직접 해설을 조작하거나 파일을 고를 때 자동 안내를 멈춘다. */
     const click = (event) => {
-      if (event.target.matches('input[type="file"]')) {
+      if (
+        event.target.closest('[data-voice-manual]') ||
+        event.target.matches('input[type="file"]')
+      ) {
         suspended = true
         clearTimeout(timer)
         stop()
@@ -184,7 +183,6 @@ export default function VoiceGuide() {
     root.addEventListener('click', click, true)
     root.addEventListener('change', change)
     root.addEventListener('cancel', cancel, true)
-
     document.addEventListener('visibilitychange', visibility)
 
     schedule()
@@ -198,7 +196,6 @@ export default function VoiceGuide() {
       root.removeEventListener('click', click, true)
       root.removeEventListener('change', change)
       root.removeEventListener('cancel', cancel, true)
-
       document.removeEventListener('visibilitychange', visibility)
 
       stop()

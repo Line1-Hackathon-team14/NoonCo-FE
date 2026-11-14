@@ -2,7 +2,6 @@ import { useEffect, useSyncExternalStore } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { Button } from '../../components/button/Button'
 import { Icon } from '../../components/icon/Icon'
-import { useTts } from '../../hooks/useTts'
 import { getImageAnalysis } from '../../state/imageAnalysis'
 import progressImage from '../../assets/analysis/progress.svg'
 import failureImage from '../../assets/analysis/failure.svg'
@@ -29,7 +28,7 @@ const TITLES = {
   generating: '분석한 내용으로\n해설을 만들고 있어요',
 }
 
-/** 이미지 업로드·분석 진행과 실패 화면을 표시한다. */
+/** 이미지 분석 상태를 표시하고 완료 결과를 전달한다. */
 export default function AnalysisPage() {
   const { jobId } = useParams()
   const navigate = useNavigate()
@@ -40,11 +39,8 @@ export default function AnalysisPage() {
     job?.getSnapshot ?? getMissing,
   )
 
-  const { speak, stop, supported, error: voiceError } = useTts()
-
   const failed = state.status === 'error'
   const completed = state.status === 'done'
-  const voiceActive = !!job?.voice && supported && !voiceError
 
   const title = failed
     ? '해설을 만들지\n못했어요'
@@ -62,7 +58,6 @@ export default function AnalysisPage() {
     document.title = '사진 분석 | 눈치코치'
 
     let timer
-
     const frame = requestAnimationFrame(() => {
       timer = setTimeout(() => {
         void job?.start()
@@ -75,11 +70,8 @@ export default function AnalysisPage() {
     }
   }, [job])
 
-  /* 완료 표시 후 결과 화면으로 이동한다. */
   useEffect(() => {
     if (!completed) return
-
-    stop()
 
     const timer = setTimeout(() => {
       navigate(`/image-result/${state.materialId}`, {
@@ -89,31 +81,14 @@ export default function AnalysisPage() {
     }, 350)
 
     return () => clearTimeout(timer)
-  }, [completed, state.materialId, state.result, navigate, stop])
-
-  useEffect(() => {
-    if (!voiceActive || completed) return
-
-    const timer = setTimeout(() => {
-      if (!document.hidden) {
-        speak(failed ? `${title}. ${description}` : title)
-      }
-    }, 300)
-
-    return () => clearTimeout(timer)
-  }, [title, description, voiceActive, failed, completed, speak])
+  }, [completed, state.materialId, state.result, navigate])
 
   const leave = () => {
     job?.cancel()
-    stop()
     navigate('/home', { replace: true })
   }
 
   const retry = () => {
-    if (voiceActive) {
-      speak('사진 분석을 다시 시도합니다.')
-    }
-
     void job?.start()
   }
 
@@ -158,7 +133,6 @@ export default function AnalysisPage() {
               fill='none'
               strokeWidth='14'
             />
-
             <circle
               className='analysis-page__ring-fill'
               cx='84'
@@ -172,7 +146,6 @@ export default function AnalysisPage() {
               transform='rotate(-90 84 84)'
             />
           </svg>
-
           <img
             className='analysis-page__sparkle'
             src={progressImage}
@@ -183,11 +156,7 @@ export default function AnalysisPage() {
         </div>
       )}
 
-      <div
-        className='analysis-page__announcement'
-        aria-live={voiceActive ? 'off' : 'polite'}
-        aria-atomic='true'
-      >
+      <div className='analysis-page__announcement' aria-live='off' aria-atomic='true'>
         <h1 id='analysis-title'>{title}</h1>
         <p>{description}</p>
       </div>
@@ -219,7 +188,6 @@ export default function AnalysisPage() {
                   height={26}
                 />
               )}
-
               <span>
                 {current && failed
                   ? index === 0
@@ -232,12 +200,6 @@ export default function AnalysisPage() {
         })}
       </ol>
 
-      {voiceError && !completed && (
-        <Button variant='secondary' onClick={() => speak(`${title}. ${description}`)}>
-          현재 안내 듣기
-        </Button>
-      )}
-
       <div className='analysis-page__actions'>
         {failed && job && (
           <Button onClick={retry}>
@@ -245,7 +207,6 @@ export default function AnalysisPage() {
             다시 시도
           </Button>
         )}
-
         <Button variant='secondary' onClick={leave} disabled={completed}>
           {failed ? '홈에서 다시 촬영' : completed ? '분석 완료' : '분석 취소'}
         </Button>
