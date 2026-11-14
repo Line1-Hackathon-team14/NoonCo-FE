@@ -64,23 +64,29 @@ export const mockLogin = ({ email, password }) => {
   }
 }
 
-/**
- * 저장된 더미 사용자 조회
- * - 실제 인증 여부를 판단하는 용도로 사용하지 않는다.
- */
+/** 저장된 더미 사용자 조회 */
 export const getMockUser = () => {
   try {
     const stored = JSON.parse(window.localStorage.getItem(STORAGE_KEY))
+    const user = stored?.user
 
     if (
       stored?.version !== 1 ||
-      stored.user?.id !== MOCK_USER.id ||
-      stored.user?.email !== MOCK_USER.email
+      !Number.isInteger(user?.id) ||
+      user.id < 1 ||
+      typeof user.name !== 'string' ||
+      !user.name.trim() ||
+      typeof user.email !== 'string' ||
+      !user.email ||
+      !['EASY', 'NORMAL', 'HARD'].includes(user.difficulty) ||
+      !Number.isFinite(user.speechRate) ||
+      user.speechRate < 0.5 ||
+      user.speechRate > 2
     ) {
       return null
     }
 
-    return stored.user
+    return user
   } catch {
     return null
   }
@@ -88,8 +94,9 @@ export const getMockUser = () => {
 
 /**
  * 더미 로그인 유지
+ * - 비밀번호와 토큰은 저장하지 않는다.
  *
- * @param {typeof MOCK_USER} user
+ * @param {{ id: number, name: string, email: string, difficulty: string, speechRate: number }} user
  */
 export const saveMockUser = (user) => {
   window.localStorage.setItem(
