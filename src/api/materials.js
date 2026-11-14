@@ -1,7 +1,60 @@
 import { apiRequest } from './client'
 
 /**
+ * 학습 기록 개수를 조회한다.
+ *
+ * @returns {Promise<{ total: number, image: number, pdf: number }>}
+ */
+export const getMaterialCounts = () => apiRequest('/materials/counts')
+
+/**
+ * 완료된 해설이 있는 자료를 최신순으로 조회한다.
+ *
+ * @param {{ sourceType?: 'IMAGE' | 'PDF', page?: number, size?: number }} [params]
+ */
+export const getMaterials = ({ sourceType, page = 0, size = 20 } = {}) => {
+  const query = new URLSearchParams({
+    page: String(page),
+    size: String(size),
+  })
+
+  if (sourceType) {
+    query.set('sourceType', sourceType)
+  }
+
+  return apiRequest(`/materials?${query}`)
+}
+
+/**
+ * PDF를 업로드한다.
+ * - 크기·쪽수·암호화·손상 여부는 서버에서 검사한다.
+ *
+ * @param {File} file
+ */
+export const uploadPdf = (file) => {
+  const body = new FormData()
+  body.append('file', file)
+
+  return apiRequest('/materials/pdfs', {
+    method: 'POST',
+    body,
+  })
+}
+
+/**
+ * 자료를 삭제한다.
+ *
+ * @param {number} materialId
+ */
+export const deleteMaterial = (materialId) =>
+  apiRequest(`/materials/${materialId}`, {
+    method: 'DELETE',
+  })
+
+/**
  * 촬영 이미지 한 장을 업로드한다.
+ *
+ * @param {File} file
  */
 export const uploadCameraImage = async (file) => {
   if (!(file instanceof File) || !['image/jpeg', 'image/png'].includes(file.type)) {

@@ -16,3 +16,13 @@ export const getCurrentUser = () => {
 
   return currentUserPromise
 }
+
+/** 마이페이지에서 사용하는 현재 사용자 조회 이름을 유지한다. */
+export const getMe = getCurrentUser
+
+/** 난이도와 말하기 속도 중 전달받은 설정만 변경한다. */
+export const updateSettings = (settings) =>
+  apiRequest('/users/me/settings', {
+    method: 'PATCH',
+    body: settings,
+  })
