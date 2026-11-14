@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom'
 
 import { logout } from '../../api/auth'
 import { getMaterialCounts } from '../../api/materials'
-import { getMe } from '../../api/users'
+import { getMe, updateSettings } from '../../api/users'
 import { AppBar } from '../../components/app-bar/AppBar'
 import { Button } from '../../components/button/Button'
 import { HistoryLink } from './components/history-link/HistoryLink'
@@ -14,7 +14,15 @@ import './MyPage.css'
 const PAGE_TITLE = '마이페이지'
 
 const DEFAULT_ERROR = '내 정보를 불러오지 못했어요. 다시 시도해 주세요.'
+const SPEED_ERROR = '말하기 속도를 저장하지 못했어요. 다시 시도해 주세요.'
+const SPEEDS = [0.5, 1.0, 1.5, 2.0]
 const DIFFICULTY_LABELS = { EASY: '쉬움', NORMAL: '보통', HARD: '어려움' }
+
+// 선택지는 0.5 · 1.0 · 1.5 · 2.0배. 서버에 다른 값(예: 1.2)이 저장돼 있으면 그 값도 보여 준다.
+const getSpeedOptions = (current) =>
+  [...new Set([...SPEEDS, current])]
+    .sort((a, b) => a - b)
+    .map((speed) => ({ value: speed.toFixed(1), label: `${speed.toFixed(1)}배` }))
 
 function MyPage() {
   const navigate = useNavigate()
@@ -25,6 +33,8 @@ function MyPage() {
   const [user, setUser] = useState(null)
   const [counts, setCounts] = useState(null)
   const [loggingOut, setLoggingOut] = useState(false)
+  const [savingSpeed, setSavingSpeed] = useState(false)
+  const [speedError, setSpeedError] = useState('')
   // TODO: 저장 위치(FE localStorage 또는 BE)가 정해지면 저장한다. 그전에는 화면 상태로만 동작
   const [cameraGuide, setCameraGuide] = useState(true)
 
@@ -58,6 +68,21 @@ function MyPage() {
   const handleRetry = () => {
     setStatus('loading')
     setAttempt((value) => value + 1)
+  }
+
+  const handleSpeedChange = async (value) => {
+    if (savingSpeed) return
+    setSavingSpeed(true)
+    setSpeedError('')
+
+    try {
+      const saved = await updateSettings({ speechRate: Number(value) })
+      setUser((prev) => ({ ...prev, speechRate: saved.speechRate }))
+    } catch (error) {
+      setSpeedError(error.message || SPEED_ERROR)
+    } finally {
+      setSavingSpeed(false)
+    }
   }
 
   const handleLogout = async () => {
@@ -108,11 +133,18 @@ function MyPage() {
               />
             </li>
             <li>
-              <SettingRow
-                icon='volume'
-                label='말하기 속도'
-                value={user ? `${Number(user.speechRate).toFixed(1)}배` : ''}
-              />
+              {user ? (
+                <SettingRow
+                  icon='volume'
+                  label='말하기 속도'
+                  options={getSpeedOptions(user.speechRate)}
+                  selected={user.speechRate.toFixed(1)}
+                  onSelect={handleSpeedChange}
+                  disabled={savingSpeed}
+                />
+              ) : (
+                <SettingRow icon='volume' label='말하기 속도' />
+              )}
             </li>
             <li>
               <SettingRow
@@ -123,6 +155,11 @@ function MyPage() {
               />
             </li>
           </ul>
+          {speedError && (
+            <p role='alert' className='my-page__error-message'>
+              {speedError}
+            </p>
+          )}
         </div>
 
         <div className='my-page__actions'>
