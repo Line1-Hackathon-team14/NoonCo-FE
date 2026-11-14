@@ -6,7 +6,6 @@ import AnalysisPage from '../pages/analysis/AnalysisPage'
 import CameraPage from '../pages/camera/CameraPage'
 import HistoryPage from '../pages/history/HistoryPage'
 import HomePage from '../pages/home/HomePage'
-import ImageResultPage from '../pages/image-result/ImageResultPage'
 import LevelSettingPage from '../pages/level-setting/LevelSettingPage'
 import LoginPage from '../pages/login/LoginPage'
 import MyPage from '../pages/my-page/MyPage'
@@ -14,6 +13,7 @@ import PdfConfirmPage from '../pages/pdf-confirm/PdfConfirmPage'
 import PdfUploadPage from '../pages/pdf-upload/PdfUploadPage'
 import SignupPage from '../pages/signup/SignupPage'
 import SignupCompletePage from '../pages/signup-complete/SignupCompletePage'
+import VoiceResultPage from '../pages/voice-result/VoiceResultPage'
 
 export const AppRouter = createBrowserRouter([
   {
@@ -50,7 +50,7 @@ export const AppRouter = createBrowserRouter([
       },
       {
         path: 'image-result/:materialId',
-        element: <ImageResultPage />,
+        element: <VoiceResultPage />,
       },
       {
         path: 'pdf',

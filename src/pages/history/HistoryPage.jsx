@@ -174,7 +174,7 @@ function HistoryPage() {
                 {groupItems.map((item) => (
                   <HistoryItem
                     key={item.materialId}
-                    to={`/listen/${item.materialId}`}
+                    to={`/image-result/${item.materialId}`}
                     title={item.title || UNTITLED}
                     meta={getMeta(item)}
                     sourceType={item.sourceType}
