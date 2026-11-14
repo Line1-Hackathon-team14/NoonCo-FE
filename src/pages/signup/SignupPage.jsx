@@ -1,12 +1,11 @@
 import { useEffect, useRef, useState } from 'react'
-import { Link, Navigate, useNavigate } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 
+import { signup } from '../../api/auth'
 import { AppBar } from '../../components/app-bar/AppBar'
 import { Button } from '../../components/button/Button'
 import { Chip } from '../../components/chip/Chip'
 import { Icon } from '../../components/icon/Icon'
-import { getMockUser, saveMockUser } from '../../mocks/auth'
-import { mockSignup } from '../../mocks/signup'
 import { SignupAgreements } from './components/signup-agreements/SignupAgreements'
 import { validateSignup } from './utils/validateSignup'
 import './SignupPage.css'
@@ -53,10 +52,50 @@ const FIELDS = [
   },
 ]
 
+/** 서버 오류를 필드 오류와 공통 안내로 나눈다. */
+const createFeedback = (error) => {
+  if (error.code === 'EMAIL_ALREADY_EXISTS') {
+    return {
+      fields: {
+        email: error.message || '이미 가입된 이메일입니다.',
+      },
+      message: '',
+      focus: 'email',
+    }
+  }
+
+  if (error.code === 'VALIDATION_FAILED' && Array.isArray(error.data)) {
+    const fields = Object.fromEntries(
+      error.data
+        .filter(
+          (item) =>
+            ['name', 'email', 'password'].includes(item.field) && typeof item.message === 'string',
+        )
+        .map(({ field, message }) => [field, message]),
+    )
+
+    const firstField = ['name', 'email', 'password'].find((field) => fields[field])
+
+    if (firstField) {
+      return {
+        fields,
+        message: '',
+        focus: firstField,
+      }
+    }
+  }
+
+  return {
+    fields: {},
+    message: error.message || '가입 요청을 처리하지 못했어요. 다시 시도해 주세요.',
+    focus: 'message',
+  }
+}
+
 /**
  * 회원가입 1단계
- * - 입력값과 필수 동의를 검사한 뒤 더미 가입을 처리한다.
- * - 오류는 스크린리더로 안내하며 별도 TTS는 사용하지 않는다.
+ * - 입력값과 필수 동의를 검사한 뒤 가입 API를 호출한다.
+ * - 성공 시 인증 정보를 저장하고 완료 화면으로 이동한다.
  */
 function SignupPage() {
   const navigate = useNavigate()
@@ -64,8 +103,9 @@ function SignupPage() {
   const titleRef = useRef(null)
   const formRef = useRef(null)
   const submitErrorRef = useRef(null)
+  const mountedRef = useRef(false)
+  const submitLockRef = useRef(false)
 
-  const [rememberedUser] = useState(getMockUser)
   const [values, setValues] = useState(INITIAL_VALUES)
   const [agreements, setAgreements] = useState({
     terms: false,
@@ -73,22 +113,33 @@ function SignupPage() {
   })
   const [touched, setTouched] = useState({})
   const [submitted, setSubmitted] = useState(false)
-  const [submitError, setSubmitError] = useState('')
+  const [submitting, setSubmitting] = useState(false)
+  const [feedback, setFeedback] = useState(null)
+  const [createdButNotSaved, setCreatedButNotSaved] = useState(false)
 
-  const errors = validateSignup(values, agreements)
+  const clientErrors = validateSignup(values, agreements)
+  const errors = {
+    ...clientErrors,
+    ...feedback?.fields,
+  }
 
   useEffect(() => {
-    if (rememberedUser) return
-
+    mountedRef.current = true
     document.title = '회원가입 | 눈치코치'
-    titleRef.current?.focus()
-  }, [rememberedUser])
+    titleRef.current?.focus({ preventScroll: true })
+
+    return () => {
+      mountedRef.current = false
+    }
+  }, [])
 
   useEffect(() => {
-    if (submitError) {
+    if (feedback?.focus === 'message') {
       submitErrorRef.current?.focus()
+    } else if (feedback?.focus) {
+      formRef.current?.elements.namedItem(feedback.focus)?.focus()
     }
-  }, [submitError])
+  }, [feedback])
 
   const handleChange = (event) => {
     const { name, value } = event.target
@@ -97,7 +148,10 @@ function SignupPage() {
       ...previous,
       [name]: value,
     }))
-    setSubmitError('')
+
+    if (!createdButNotSaved) {
+      setFeedback(null)
+    }
   }
 
   const handleBlur = (event) => {
@@ -109,54 +163,74 @@ function SignupPage() {
     }))
   }
 
-  const handleSubmit = (event) => {
+  const handleSubmit = async (event) => {
     event.preventDefault()
-    setSubmitted(true)
-    setSubmitError('')
 
-    const firstError = Object.keys(errors)[0]
+    if (submitting || submitLockRef.current || createdButNotSaved) {
+      return
+    }
+
+    setSubmitted(true)
+    setFeedback(null)
+
+    const firstError = Object.keys(clientErrors)[0]
 
     if (firstError) {
       const targetName =
         firstError === 'agreements' ? (agreements.terms ? 'privacy' : 'terms') : firstError
 
-      // 오류 문구를 반영한 뒤 해당 입력으로 이동한다.
+      // 오류 문구가 반영된 뒤 해당 입력으로 이동한다.
       requestAnimationFrame(() => {
         formRef.current?.elements.namedItem(targetName)?.focus()
       })
       return
     }
 
-    const response = mockSignup({
-      name: values.name.trim(),
-      email: values.email.trim().toLowerCase(),
-      password: values.password,
-    })
-
-    if (response.resultCode !== 'CREATED') {
-      setSubmitError(response.msg)
-      return
-    }
+    submitLockRef.current = true
+    setSubmitting(true)
 
     try {
-      saveMockUser(response.data.user)
-    } catch {
-      setSubmitError(
-        '로그인 상태를 저장하지 못했어요. 브라우저의 사이트 데이터 저장 설정을 확인해 주세요.',
-      )
-      return
-    }
+      await signup({
+        name: values.name,
+        email: values.email,
+        password: values.password,
+      })
 
-    navigate('/signup/complete', { replace: true })
+      if (!mountedRef.current) return
+
+      setValues((previous) => ({
+        ...previous,
+        password: '',
+        passwordConfirm: '',
+      }))
+
+      navigate('/signup/complete', { replace: true })
+    } catch (error) {
+      if (!mountedRef.current) return
+
+      if (error.code === 'SIGNUP_SESSION_SAVE_FAILED') {
+        setCreatedButNotSaved(true)
+      }
+
+      setFeedback(createFeedback(error))
+    } finally {
+      submitLockRef.current = false
+
+      if (mountedRef.current) {
+        setSubmitting(false)
+      }
+    }
   }
 
-  if (rememberedUser) {
-    return <Navigate to='/home' replace />
+  const handleBack = () => {
+    if (!submitLockRef.current) {
+      navigate('/')
+    }
   }
 
   return (
     <div className='signup'>
-      <AppBar title='회원가입' titleRef={titleRef} onBack={() => navigate('/')} />
+      <AppBar title='회원가입' titleRef={titleRef} onBack={handleBack} />
 
       <main className='signup__main'>
         <div className='signup__intro'>
@@ -171,7 +245,13 @@ function SignupPage() {
           </p>
         </div>
 
-        <form ref={formRef} className='signup__form' noValidate onSubmit={handleSubmit}>
+        <form
+          ref={formRef}
+          className='signup__form'
+          noValidate
+          aria-busy={submitting}
+          onSubmit={handleSubmit}
+        >
           <div className='signup__fields'>
             {FIELDS.map((field) => {
               const showFeedback = submitted || touched[field.name]
@@ -223,6 +303,7 @@ function SignupPage() {
                       autoCapitalize={field.name === 'email' ? 'none' : undefined}
                       spellCheck={false}
                       required
+                      readOnly={submitting || createdButNotSaved}
                       value={values[field.name]}
                       aria-invalid={Boolean(error)}
                       aria-describedby={describedBy || undefined}
@@ -256,22 +337,38 @@ function SignupPage() {
 
           <SignupAgreements
             value={agreements}
-            onChange={setAgreements}
-            error={submitted ? errors.agreements : ''}
+            onChange={(next) => {
+              if (!submitLockRef.current && !createdButNotSaved) {
+                setAgreements(next)
+              }
+            }}
+            error={submitted ? clientErrors.agreements : ''}
           />
 
-          {submitError && (
+          {feedback?.message && (
             <p ref={submitErrorRef} className='signup__submit-error' tabIndex={-1}>
-              {submitError}
+              {feedback.message}
             </p>
           )}
 
-          <Button type='submit'>가입하기</Button>
+          <Button type='submit' disabled={submitting || createdButNotSaved}>
+            {submitting ? '가입 중' : createdButNotSaved ? '가입 완료 · 로그인 필요' : '가입하기'}
+          </Button>
         </form>
 
         <p className='signup__login'>
           <span>이미 계정이 있어요</span>
-          <Link to='/'>로그인</Link>
+          <Link
+            to='/'
+            aria-disabled={submitting}
+            onClick={(event) => {
+              if (submitLockRef.current) {
+                event.preventDefault()
+              }
+            }}
+          >
+            로그인
+          </Link>
         </p>
       </main>
     </div>

@@ -1,20 +1,20 @@
 import { useEffect, useRef, useState } from 'react'
 import { Navigate, useNavigate } from 'react-router-dom'
 
+import { readSession } from '../../api/session'
 import { Button } from '../../components/button/Button'
 import { Icon } from '../../components/icon/Icon'
-import { getMockUser } from '../../mocks/auth'
 import './SignupCompletePage.css'
 
 /**
  * 회원가입 완료 화면
- * - 저장된 더미 사용자 이름을 표시한다.
- * - 제목에 포커스를 옮겨 완료 내용을 스크린리더로 안내한다.
+ * - 실제 가입 응답에서 저장한 사용자 이름을 표시한다.
+ * - 제목에 포커스를 옮겨 완료 내용을 안내한다.
  */
 function SignupCompletePage() {
   const navigate = useNavigate()
   const titleRef = useRef(null)
-  const [user] = useState(getMockUser)
+  const [user] = useState(() => readSession()?.user ?? null)
 
   useEffect(() => {
     if (!user) return
@@ -28,7 +28,7 @@ function SignupCompletePage() {
   }
 
   if (!user) {
-    return <Navigate to='/signup' replace />
+    return <Navigate to='/' replace />
   }
 
   return (
