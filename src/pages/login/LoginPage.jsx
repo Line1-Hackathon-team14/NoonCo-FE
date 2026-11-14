@@ -1,15 +1,62 @@
 import { useEffect, useRef, useState } from 'react'
-import { Link, Navigate, useNavigate } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 
+import { login, restoreLogin } from '../../api/auth'
 import { Button } from '../../components/button/Button'
 import { Icon } from '../../components/icon/Icon'
-import { getMockUser, mockLogin, saveMockUser } from '../../mocks/auth'
 import './LoginPage.css'
+
+/** 로그인 입력값을 검사한다. */
+const validateLogin = (email, password) => {
+  const fields = {}
+  const normalizedEmail = email.trim()
+
+  if (!normalizedEmail) {
+    fields.email = '이메일을 입력해 주세요.'
+  } else if (normalizedEmail.length > 255 || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(normalizedEmail)) {
+    fields.email = '올바른 이메일 형식을 입력해 주세요.'
+  }
+
+  if (!password) {
+    fields.password = '비밀번호를 입력해 주세요.'
+  }
+
+  return fields
+}
+
+/** 서버 오류를 화면 안내 형식으로 바꾼다. */
+const createFeedback = (error) => {
+  if (error.code === 'VALIDATION_FAILED' && Array.isArray(error.data)) {
+    const fields = Object.fromEntries(
+      error.data
+        .filter(
+          (item) => ['email', 'password'].includes(item.field) && typeof item.message === 'string',
+        )
+        .map(({ field, message }) => [field, message]),
+    )
+
+    const firstField = ['email', 'password'].find((field) => fields[field])
+
+    if (firstField) {
+      return {
+        fields,
+        message: '',
+        focus: firstField,
+      }
+    }
+  }
+
+  return {
+    fields: {},
+    message: error.message || '로그인하지 못했어요. 다시 시도해 주세요.',
+    focus: 'message',
+  }
+}
 
 /**
  * 이메일 로그인 화면
- * - 저장된 더미 사용자가 있으면 홈으로 이동한다.
- * - 오류는 포커스 이동으로 안내하며 별도 TTS는 사용하지 않는다.
+ * - 서버에서 저장된 인증 정보를 확인한 뒤 홈으로 이동한다.
+ * - 오류는 포커스로 안내하며 별도 TTS는 사용하지 않는다.
  */
 function LoginPage() {
   const navigate = useNavigate()
@@ -18,23 +65,59 @@ function LoginPage() {
   const emailRef = useRef(null)
   const passwordRef = useRef(null)
   const messageRef = useRef(null)
+  const mountedRef = useRef(false)
+  const submitLockRef = useRef(false)
 
-  const [rememberedUser] = useState(getMockUser)
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [feedback, setFeedback] = useState(null)
+  const [checking, setChecking] = useState(true)
+  const [submitting, setSubmitting] = useState(false)
 
+  const busy = checking || submitting
   const fieldErrors = feedback?.fields ?? {}
   const message = feedback?.message ?? ''
 
   useEffect(() => {
-    if (rememberedUser) return
+    mountedRef.current = true
+    let active = true
 
     document.title = '로그인 | 눈치코치'
-    titleRef.current?.focus()
-  }, [rememberedUser])
 
-  // 오류가 화면에 반영된 뒤 해당 위치로 포커스를 옮긴다.
+    restoreLogin()
+      .then((user) => {
+        if (!active) return
+
+        if (user) {
+          navigate('/home', { replace: true })
+          return
+        }
+
+        setChecking(false)
+      })
+      .catch((error) => {
+        if (!active) return
+
+        setChecking(false)
+        setFeedback({
+          fields: {},
+          message: `자동 로그인 확인에 실패했어요. ${error.message}`,
+          focus: 'message',
+        })
+      })
+
+    return () => {
+      active = false
+      mountedRef.current = false
+    }
+  }, [navigate])
+
+  useEffect(() => {
+    if (!checking) {
+      titleRef.current?.focus({ preventScroll: true })
+    }
+  }, [checking])
+
   useEffect(() => {
     if (feedback?.focus === 'email') {
       emailRef.current?.focus()
@@ -45,50 +128,45 @@ function LoginPage() {
     }
   }, [feedback])
 
-  const handleSubmit = (event) => {
+  const handleSubmit = async (event) => {
     event.preventDefault()
 
-    const response = mockLogin({ email, password })
+    if (busy || submitLockRef.current) return
 
-    if (response.resultCode === 'VALIDATION_FAILED') {
-      const fields = Object.fromEntries(
-        response.data.map(({ field, message: errorMessage }) => [field, errorMessage]),
-      )
+    const fields = validateLogin(email, password)
+    const firstField = ['email', 'password'].find((field) => fields[field])
 
+    if (firstField) {
       setFeedback({
         fields,
         message: '',
-        focus: response.data[0].field,
+        focus: firstField,
       })
       return
     }
 
-    if (response.resultCode !== 'OK') {
-      setFeedback({
-        fields: {},
-        message: response.msg,
-        focus: 'message',
-      })
-      return
-    }
+    submitLockRef.current = true
+    setSubmitting(true)
+    setFeedback(null)
 
     try {
-      saveMockUser(response.data.user)
-    } catch {
-      setFeedback({
-        fields: {},
-        message:
-          '로그인 상태를 저장하지 못했어요. 브라우저의 사이트 데이터 저장 설정을 확인해 주세요.',
-        focus: 'message',
-      })
-      return
+      await login({ email, password })
+
+      if (!mountedRef.current) return
+
+      setPassword('')
+      navigate('/home', { replace: true })
+    } catch (error) {
+      if (!mountedRef.current) return
+
+      setFeedback(createFeedback(error))
+    } finally {
+      submitLockRef.current = false
+
+      if (mountedRef.current) {
+        setSubmitting(false)
+      }
     }
-
-    navigate('/home', { replace: true })
-  }
-
-  if (rememberedUser) {
-    return <Navigate to='/home' replace />
   }
 
   return (
@@ -117,7 +195,11 @@ function LoginPage() {
           </div>
         </header>
 
-        <form className='login__form' noValidate onSubmit={handleSubmit}>
+        <p className='login__sr-only' role='status'>
+          {checking ? '로그인 상태를 확인하고 있어요.' : submitting ? '로그인하고 있어요.' : ''}
+        </p>
+
+        <form className='login__form' noValidate aria-busy={busy} onSubmit={handleSubmit}>
           <div className='login__fields'>
             <div className='login__field'>
               <label htmlFor='login-email' className='login__label'>
@@ -150,6 +232,7 @@ function LoginPage() {
                   placeholder='example@email.com'
                   value={email}
                   required
+                  readOnly={busy}
                   aria-invalid={Boolean(fieldErrors.email)}
                   aria-describedby={fieldErrors.email ? 'login-email-error' : undefined}
                   onChange={(event) => {
@@ -197,6 +280,7 @@ function LoginPage() {
                   placeholder='비밀번호 입력'
                   value={password}
                   required
+                  readOnly={busy}
                   aria-invalid={Boolean(fieldErrors.password)}
                   aria-describedby={fieldErrors.password ? 'login-password-error' : undefined}
                   onChange={(event) => {
@@ -221,9 +305,18 @@ function LoginPage() {
               </p>
             )}
 
-            <Button type='submit'>로그인</Button>
+            <Button type='submit' disabled={busy}>
+              {checking ? '로그인 확인 중' : submitting ? '로그인 중' : '로그인'}
+            </Button>
 
-            <Link to='/signup' className='button button--secondary login__signup'>
+            <Link
+              to='/signup'
+              className='button button--secondary login__signup'
+              aria-disabled={busy}
+              onClick={(event) => {
+                if (busy) event.preventDefault()
+              }}
+            >
               <span className='button__label'>처음이에요 · 회원가입</span>
             </Link>
 
