@@ -24,3 +24,26 @@ export const getMaterials = ({ sourceType, page = 0, size = 20 } = {}) => {
 
   return apiRequest(`/materials?${query}`)
 }
+
+/**
+ * PDF 업로드 (서버가 크기·쪽수·암호화·손상을 검사한다)
+ * - 응답의 title은 항상 null이다. 제목은 분석 스트림의 meta에서 받는다.
+ *
+ * @param {File} file
+ * @returns {Promise<{ materialId: number, sourceType: 'PDF', title: null,
+ *   fileSize: number, pageCount: number, createdAt: string }>}
+ */
+export const uploadPdf = (file) => {
+  const body = new FormData()
+  body.append('file', file)
+
+  return apiRequest('/materials/pdfs', { method: 'POST', body })
+}
+
+/**
+ * 자료 삭제 (응답 본문이 비어 있을 수 있다)
+ *
+ * @param {number} materialId
+ */
+export const deleteMaterial = (materialId) =>
+  apiRequest(`/materials/${materialId}`, { method: 'DELETE', allowEmpty: true })
