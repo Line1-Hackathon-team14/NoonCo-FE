@@ -41,9 +41,9 @@ export const uploadPdf = (file) => {
 }
 
 /**
- * 자료 삭제 (응답 본문이 비어 있을 수 있다)
+ * 자료 삭제 (실제 응답은 204, 본문 없음)
  *
  * @param {number} materialId
  */
 export const deleteMaterial = (materialId) =>
-  apiRequest(`/materials/${materialId}`, { method: 'DELETE', allowEmpty: true })
+  apiRequest(`/materials/${materialId}`, { method: 'DELETE' })
