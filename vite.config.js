@@ -1,16 +1,19 @@
 import react from '@vitejs/plugin-react'
 import { defineConfig } from 'vite'
-
 import { VitePWA } from 'vite-plugin-pwa'
 import svgr from 'vite-plugin-svgr'
 
-// https://vite.dev/config/
 export default defineConfig({
   plugins: [
     react(),
     svgr(),
     VitePWA({
       registerType: 'autoUpdate',
+
+      workbox: {
+        // OpenCV 작업 스레드를 사전 캐시에 포함한다.
+        maximumFileSizeToCacheInBytes: 16 * 1024 * 1024,
+      },
 
       manifest: {
         name: 'NoonCo',
