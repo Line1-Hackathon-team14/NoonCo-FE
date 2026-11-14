@@ -1,27 +1,24 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 
-import { drawPreview, encodeCapture } from '../utils/cameraImage'
+import { drawPreview } from '../utils/cameraImage'
+import { takePreparedCamera } from '../utils/cameraSession'
 
 const cameraError = (error) => {
   if (['NotAllowedError', 'SecurityError'].includes(error.name)) {
     return '카메라 권한을 허용한 뒤 다시 시작해 주세요.'
   }
-
   if (error.name === 'NotFoundError') {
     return '사용할 수 있는 카메라를 찾지 못했어요.'
   }
-
   if (error.name === 'NotReadableError') {
     return '다른 앱에서 카메라를 사용 중인지 확인해 주세요.'
   }
-
   return error.message || '카메라를 시작하지 못했어요.'
 }
 
 /**
- * 카메라와 탐지기의 수명을 함께 관리한다.
- * - 연속으로 안정적인 결과가 확인돼야 촬영을 허용한다.
- * - 화면 이탈과 백그라운드 전환 시 카메라를 종료한다.
+ * 홈에서 전달받은 카메라와 탐지기를 관리한다.
+ * - 촬영 시 이미지 변환을 기다리지 않고 캔버스를 반환한다.
  */
 export const useDocumentCamera = () => {
   const videoRef = useRef(null)
@@ -40,7 +37,6 @@ export const useDocumentCamera = () => {
 
     clearTimeout(run.timer)
     clearTimeout(run.timeout)
-
     run.worker?.terminate()
 
     run.stream?.getTracks().forEach((track) => {
@@ -48,9 +44,7 @@ export const useDocumentCamera = () => {
       track.stop()
     })
 
-    if (videoRef.current) {
-      videoRef.current.srcObject = null
-    }
+    if (videoRef.current) videoRef.current.srcObject = null
   }, [])
 
   const stop = useCallback(() => {
@@ -73,12 +67,10 @@ export const useDocumentCamera = () => {
     }
 
     runRef.current = run
-
     const current = () => runRef.current === run
 
     const fail = (message) => {
       if (!current()) return
-
       dispose()
       setPhase('error')
       setError(message)
@@ -125,7 +117,6 @@ export const useDocumentCamera = () => {
 
       run.worker.onmessage = ({ data }) => {
         if (!current()) return
-
         clearTimeout(run.timeout)
 
         if (data.type === 'error') {
@@ -155,24 +146,14 @@ export const useDocumentCamera = () => {
         run.stable = code === 'ready' && sameView ? (steady ? run.stable + 1 : 1) : 0
 
         run.previous = bounds
-
         run.code = !sameView ? 'searching' : code === 'ready' && run.stable < 3 ? 'steady' : code
 
         run.lastAt = performance.now()
-
         setStatus(run.code)
-
         run.timer = setTimeout(tick, 350)
       }
 
-      const stream = await navigator.mediaDevices.getUserMedia({
-        audio: false,
-        video: {
-          facingMode: { ideal: 'environment' },
-          width: { ideal: 1920 },
-          height: { ideal: 1080 },
-        },
-      })
+      const stream = takePreparedCamera()
 
       if (!current()) {
         stream.getTracks().forEach((track) => track.stop())
@@ -188,7 +169,6 @@ export const useDocumentCamera = () => {
       })
 
       videoRef.current.srcObject = stream
-
       await videoRef.current.play()
 
       if (!current()) return
@@ -201,7 +181,7 @@ export const useDocumentCamera = () => {
     }
   }, [dispose])
 
-  const capture = useCallback(async () => {
+  const capture = useCallback(() => {
     const run = runRef.current
     const preview = previewRef.current
 
@@ -215,16 +195,20 @@ export const useDocumentCamera = () => {
     }
 
     const canvas = document.createElement('canvas')
-
     drawPreview(videoRef.current, preview, canvas, 2560)
 
-    return encodeCapture(canvas)
+    return canvas
   }, [])
 
   useEffect(() => {
+    let active = true
+
+    queueMicrotask(() => {
+      if (active) void start()
+    })
+
     const onVisibility = () => {
       if (!document.hidden || !runRef.current) return
-
       dispose()
       setPhase('paused')
       setStatus('loading')
@@ -233,10 +217,11 @@ export const useDocumentCamera = () => {
     document.addEventListener('visibilitychange', onVisibility)
 
     return () => {
+      active = false
       document.removeEventListener('visibilitychange', onVisibility)
       dispose()
     }
-  }, [dispose])
+  }, [dispose, start])
 
   return {
     videoRef,
