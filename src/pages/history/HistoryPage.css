@@ -38,3 +38,19 @@
   flex-direction: column;
   gap: 12px;
 }
+
+.history__status {
+  font: var(--font-label-m);
+  color: var(--color-text-primary);
+}
+
+.history__error {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.history__error-message {
+  font: var(--font-label-m);
+  color: var(--color-status-danger);
+}
