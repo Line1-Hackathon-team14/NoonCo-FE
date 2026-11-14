@@ -1,27 +1,54 @@
 import { useEffect, useState, useSyncExternalStore } from 'react'
-
 import { createTtsPlayer } from '../utils/tts'
+import {
+  getVoiceGuideSnapshot,
+  onVoiceGuideChange,
+  subscribeVoiceGuide,
+} from '../utils/voiceGuideSettings'
 
-/**
- * 페이지에서 사용하는 TTS 훅
- * - 언마운트 시 해당 페이지의 재생을 중지한다.
- * - 다른 페이지에서 새로 시작한 음성은 중지하지 않는다.
- */
+/** 마이페이지 음성 설정을 모든 서비스 재생에 적용한다. */
 export const useTts = () => {
-  const [player] = useState(createTtsPlayer)
+  const [player] = useState(() => {
+    const base = createTtsPlayer()
+    const allowed = () => getVoiceGuideSnapshot().enabled
+
+    return {
+      ...base,
+      speak: (text) => (allowed() ? base.speak(text) : null),
+      enqueue: (text, id) => (allowed() ? base.enqueue(text, id) : false),
+      resume: () => {
+        if (allowed()) base.resume()
+      },
+      restart: () => (allowed() ? base.restart() : null),
+    }
+  })
 
   const state = useSyncExternalStore(player.subscribe, player.getSnapshot, player.getSnapshot)
+
+  const voice = useSyncExternalStore(
+    subscribeVoiceGuide,
+    getVoiceGuideSnapshot,
+    getVoiceGuideSnapshot,
+  )
 
   useEffect(() => {
     player.prepare()
 
+    const unsubscribe = onVoiceGuideChange((enabled) => {
+      if (!enabled) player.stop()
+    })
+
+    if (!getVoiceGuideSnapshot().enabled) player.stop()
+
     return () => {
+      unsubscribe()
       player.stop()
     }
   }, [player])
 
   return {
     ...state,
+    enabled: voice.enabled,
     speak: player.speak,
     enqueue: player.enqueue,
     pause: player.pause,

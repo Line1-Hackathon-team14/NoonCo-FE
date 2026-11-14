@@ -1,17 +1,13 @@
-import { useEffect, useRef, useState } from 'react'
+import { useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-
 import { Icon } from '../../components/icon/Icon'
 import { Button } from '../../components/button/Button'
 import { useDocumentCamera } from '../../hooks/useDocumentCamera'
-import { useTts } from '../../hooks/useTts'
 import { CAMERA_MESSAGES } from '../../utils/documentDetector'
 import { createImageAnalysis } from '../../state/imageAnalysis'
-
 import alertIcon from '../../assets/camera-alert.svg'
 import guide from '../../assets/camera-guide.svg'
 import readyGuide from '../../assets/camera-guide-ready.svg'
-
 import './CameraPage.css'
 
 /** 촬영한 순간의 캔버스를 분석 화면에 전달한다. */
@@ -28,19 +24,13 @@ export default function CameraPage() {
     capture,
   } = useDocumentCamera()
 
-  const { supported, error: ttsError, speak, stop: stopTts } = useTts()
-
-  const [voice, setVoice] = useState(true)
   const [error, setError] = useState('')
-
   const locked = useRef(false)
   const lastTap = useRef(null)
-  const spoken = useRef('')
 
   const ready = phase === 'running' && status === 'ready'
   const loading = ['idle', 'starting'].includes(phase)
   const unavailable = ['paused', 'error'].includes(phase)
-  const voiceActive = voice && supported && !ttsError
 
   const message =
     error ||
@@ -48,42 +38,6 @@ export default function CameraPage() {
     (phase === 'paused'
       ? '카메라가 일시정지됐어요. 홈에서 다시 시작해 주세요'
       : CAMERA_MESSAGES[status])
-
-  useEffect(() => {
-    if (!voiceActive || spoken.current === message) return
-
-    const timer = setTimeout(() => {
-      if (document.hidden) return
-      spoken.current = message
-      speak(message)
-    }, 900)
-
-    return () => clearTimeout(timer)
-  }, [message, voiceActive, speak])
-
-  useEffect(() => {
-    const onVisibility = () => {
-      if (document.hidden) stopTts()
-    }
-
-    document.addEventListener('visibilitychange', onVisibility)
-
-    return () => {
-      document.removeEventListener('visibilitychange', onVisibility)
-    }
-  }, [stopTts])
-
-  const toggleVoice = () => {
-    if (voiceActive) {
-      setVoice(false)
-      stopTts()
-      return
-    }
-
-    setVoice(true)
-    spoken.current = message
-    speak(message)
-  }
 
   const shoot = () => {
     if (locked.current || !ready) return
@@ -93,11 +47,9 @@ export default function CameraPage() {
 
     try {
       const canvas = capture()
-      const id = createImageAnalysis(canvas, voice)
+      const id = createImageAnalysis(canvas, false)
 
-      stopTts()
       stop()
-
       navigate(`/analyzing/${id}`, { replace: true })
     } catch (cause) {
       locked.current = false
@@ -140,22 +92,11 @@ export default function CameraPage() {
         >
           <Icon name='chevron-left' width={28} height={28} aria-hidden='true' />
         </button>
-
-        <button
-          type='button'
-          className='camera-page__voice'
-          aria-pressed={voiceActive}
-          disabled={!supported}
-          onClick={toggleVoice}
-        >
-          <Icon name='volume' width={20} height={20} aria-hidden='true' />
-          {voiceActive ? '음성 안내 켜짐' : '음성 안내 꺼짐'}
-        </button>
       </div>
 
       <div
         className={`camera-page__banner ${ready ? 'camera-page__banner--ready' : ''}`}
-        aria-live={voiceActive ? 'off' : 'polite'}
+        aria-live='off'
         aria-atomic='true'
       >
         {ready ? (
@@ -165,12 +106,6 @@ export default function CameraPage() {
         )}
         <p>{message}</p>
       </div>
-
-      {ttsError && (
-        <p className='camera-page__voice-error' role='status'>
-          {ttsError}
-        </p>
-      )}
 
       <div className='camera-page__preview' ref={previewRef} onPointerUp={onPreviewTap}>
         <video ref={videoRef} autoPlay muted playsInline aria-hidden='true' />
@@ -182,7 +117,6 @@ export default function CameraPage() {
         {(loading || unavailable) && (
           <div className='camera-page__start'>
             <p>{loading ? '카메라 영상을 준비하고 있어요' : '홈에서 카메라를 다시 열어 주세요'}</p>
-
             {unavailable && (
               <Button onClick={() => navigate('/home', { replace: true })}>홈으로 돌아가기</Button>
             )}

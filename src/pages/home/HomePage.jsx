@@ -1,4 +1,4 @@
-import { useEffect, useId, useRef, useState, useSyncExternalStore } from 'react'
+import { useEffect, useId, useRef, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 
 import { getCurrentUser } from '../../api/users'
@@ -6,14 +6,7 @@ import { Button } from '../../components/button/Button'
 import { Chip } from '../../components/chip/Chip'
 import { Icon } from '../../components/icon/Icon'
 import { prepareCamera } from '../../utils/cameraSession'
-import {
-  getVoiceGuideSnapshot,
-  subscribeVoiceGuide,
-  setVoiceGuideEnabled,
-} from '../../utils/voiceGuideSettings'
-
 import './HomePage.css'
-import './HomeVoiceButton.css'
 
 const DIFFICULTY_LABELS = {
   EASY: '쉬움',
@@ -48,7 +41,6 @@ function HomeActionCard({ to, variant, icon, title, description, onClick, busy }
         <span className='home-card__icon'>
           <Icon name={icon} width={34} height={34} />
         </span>
-
         <span className='home-card__arrow'>
           <Icon name='chevron-right' width={28} height={28} />
         </span>
@@ -58,7 +50,6 @@ function HomeActionCard({ to, variant, icon, title, description, onClick, busy }
         <h2 id={`${id}-title`} className='home-card__title'>
           {title}
         </h2>
-
         <p id={`${id}-description`} className='home-card__description'>
           {description}
         </p>
@@ -70,13 +61,6 @@ function HomeActionCard({ to, variant, icon, title, description, onClick, busy }
 /** 사용자 정보와 주요 기능을 표시한다. */
 function HomePage() {
   const navigate = useNavigate()
-
-  const voice = useSyncExternalStore(
-    subscribeVoiceGuide,
-    getVoiceGuideSnapshot,
-    getVoiceGuideSnapshot,
-  )
-
   const titleRef = useRef(null)
   const openingRef = useRef(null)
 
@@ -84,7 +68,6 @@ function HomePage() {
   const [cameraError, setCameraError] = useState('')
   const [today, setToday] = useState(getToday)
   const [attempt, setAttempt] = useState(0)
-
   const [state, setState] = useState({
     status: 'loading',
     user: null,
@@ -104,9 +87,7 @@ function HomePage() {
     const timer = setInterval(updateToday, 60000)
 
     const handleVisibility = () => {
-      if (document.visibilityState === 'visible') {
-        updateToday()
-      }
+      if (document.visibilityState === 'visible') updateToday()
     }
 
     document.addEventListener('visibilitychange', handleVisibility)
@@ -132,11 +113,7 @@ function HomePage() {
           throw new Error('서버의 사용자 정보 형식을 확인해 주세요.')
         }
 
-        setState({
-          status: 'ready',
-          user,
-          error: '',
-        })
+        setState({ status: 'ready', user, error: '' })
       })
       .catch((error) => {
         if (!active) return
@@ -160,32 +137,24 @@ function HomePage() {
   }, [state.status])
 
   const handleRetry = () => {
-    setState({
-      status: 'loading',
-      user: null,
-      error: '',
-    })
-
+    setState({ status: 'loading', user: null, error: '' })
     setAttempt((previous) => previous + 1)
   }
 
   const openCamera = async (event) => {
     event.preventDefault()
-
     if (openingRef.current) return
 
     const controller = new AbortController()
-
     openingRef.current = controller
+
     setOpening(true)
     setCameraError('')
 
     try {
       await prepareCamera(controller.signal)
 
-      if (!controller.signal.aborted) {
-        navigate('/camera')
-      }
+      if (!controller.signal.aborted) navigate('/camera')
     } catch (error) {
       if (!controller.signal.aborted) {
         setCameraError(error.message)
@@ -206,7 +175,6 @@ function HomePage() {
             <h1 id='home-title' className='home__title'>
               홈
             </h1>
-
             <p className='home__status-description' role='status'>
               사용자 정보를 불러오고 있어요.
             </p>
@@ -230,11 +198,9 @@ function HomePage() {
             >
               홈을 불러오지 못했어요
             </h1>
-
             <p id='home-error' className='home__status-description'>
               {state.error}
             </p>
-
             <Button onClick={handleRetry}>다시 시도하기</Button>
           </div>
         </div>
@@ -250,7 +216,6 @@ function HomePage() {
         <header className='home__header'>
           <div className='home__greeting'>
             <p className='home__date'>{today}</p>
-
             <h1
               ref={titleRef}
               id='home-title'
@@ -264,31 +229,10 @@ function HomePage() {
             </h1>
           </div>
 
-          <button
-            type='button'
-            className='home-voice'
-            data-voice-ignore
-            aria-label='서비스 음성 안내'
-            aria-pressed={voice.enabled}
-            disabled={!voice.supported}
-            title={voice.error || '서비스 전체 음성 안내 켜기 또는 끄기'}
-            onClick={() => setVoiceGuideEnabled(voice.error ? true : !voice.enabled)}
-          >
-            <Icon name='volume' width={24} height={24} aria-hidden='true' />
-
-            <span>{voice.error ? '재시도' : voice.enabled ? '켜짐' : '꺼짐'}</span>
-          </button>
-
           <Link to='/mypage' className='home__profile' aria-label='마이페이지'>
             <Icon name='user' width={28} height={28} aria-hidden='true' />
           </Link>
         </header>
-
-        {voice.error && (
-          <p className='home__status-description' data-voice-ignore>
-            {voice.error} 음성 버튼을 눌러 다시 시도해 주세요.
-          </p>
-        )}
 
         <div id='home-difficulty' className='home__difficulty'>
           <Chip>설명 난이도 · {DIFFICULTY_LABELS[user.difficulty]}</Chip>
@@ -306,7 +250,6 @@ function HomePage() {
               opening ? '카메라 권한을 확인하고 있어요' : '카메라가 위치와 조명을 음성으로 안내해요'
             }
           />
-
           <HomeActionCard
             to='/pdf'
             variant='pdf'
@@ -324,7 +267,6 @@ function HomePage() {
 
         <p className='home__tip'>
           <Icon name='info' width={20} height={20} aria-hidden='true' />
-
           <span>마이페이지에서 지난 학습 기록을 다시 들을 수 있어요</span>
         </p>
       </div>
