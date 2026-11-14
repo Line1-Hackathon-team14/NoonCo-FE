@@ -30,7 +30,7 @@ export class ApiError extends Error {
 }
 
 /** Axios로 요청하고 응답의 data를 반환한다. */
-const send = async (path, { method = 'GET', body, accessToken } = {}) => {
+const send = async (path, { method = 'GET', body, accessToken, allowEmpty = false } = {}) => {
   try {
     const response = await http.request({
       url: path,
@@ -42,6 +42,9 @@ const send = async (path, { method = 'GET', body, accessToken } = {}) => {
     if (response.status === 204) return null
 
     const payload = response.data
+
+    // 삭제처럼 성공해도 본문이 비어 있을 수 있는 API는 allowEmpty로 빈 응답을 성공으로 본다.
+    if (allowEmpty && (payload === '' || payload == null)) return null
 
     if (!payload || !['OK', 'CREATED'].includes(payload.resultCode)) {
       throw new ApiError(payload?.msg || '서버 응답 형식을 확인해 주세요.', {
@@ -154,7 +157,8 @@ const refreshAccessToken = (failedAccessToken) => {
  * - 만료된 토큰은 재발급 후 한 번만 재시도한다.
  *
  * @param {string} path /api/v1 뒤의 경로
- * @param {{ method?: string, body?: object, auth?: boolean }} options
+ * @param {{ method?: string, body?: object | FormData, auth?: boolean, allowEmpty?: boolean }} options
+ *   allowEmpty: 성공 응답의 본문이 비어 있어도 오류로 보지 않는다 (예: DELETE)
  */
 export const apiRequest = async (path, { auth = true, ...options } = {}) => {
   if (!path.startsWith('/') || path.startsWith('//')) {
