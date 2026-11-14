@@ -1,0 +1,34 @@
+.transcript {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 20px;
+  border-radius: var(--radius-md);
+  background-color: var(--color-surface-muted);
+}
+
+/* reset.css의 `*`가 요소마다 font-weight를 직접 지정하므로, 글자 스타일은 텍스트 요소에 준다 */
+.transcript__heading {
+  font: var(--font-caption);
+  color: var(--color-text-secondary);
+}
+
+.transcript__heading--error {
+  color: var(--color-status-danger-text);
+}
+
+.transcript__text {
+  font: var(--font-body-l);
+  color: var(--color-text-tertiary);
+  overflow-wrap: anywhere;
+}
+
+.transcript__previous {
+  font: inherit;
+}
+
+.transcript__current {
+  font: var(--font-body-l);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-text-primary);
+}
