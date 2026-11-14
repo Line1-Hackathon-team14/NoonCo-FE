@@ -1,34 +1,18 @@
 import { apiRequest } from './client'
-import { readSession, saveSession } from './session'
+
+let currentUserPromise = null
 
 /**
- * 내 정보 조회
- *
- * @returns {Promise<{ id: number, name: string, email: string, difficulty: string, speechRate: number }>}
+ * 현재 사용자 조회
+ * - 동시에 들어온 조회는 진행 중인 요청을 공유한다.
+ * - 완료된 응답은 캐시하지 않는다.
  */
-export const getMe = () => apiRequest('/users/me')
+export const getCurrentUser = () => {
+  if (currentUserPromise) return currentUserPromise
 
-/**
- * 내 설정 변경 (보낸 값만 바뀐다. 최소 1개)
- * - 저장된 로그인 정보의 user도 새 설정으로 맞춘다.
- *
- * @param {{ difficulty?: 'EASY' | 'NORMAL' | 'HARD', speechRate?: number }} settings
- * @returns {Promise<{ difficulty: string, speechRate: number }>}
- */
-export const updateSettings = async (settings) => {
-  const result = await apiRequest('/users/me/settings', {
-    method: 'PATCH',
-    body: settings,
+  currentUserPromise = apiRequest('/users/me').finally(() => {
+    currentUserPromise = null
   })
 
-  const session = readSession()
-  if (session?.user && result) {
-    try {
-      saveSession({ ...session, user: { ...session.user, ...result } })
-    } catch {
-      // 저장소 접근이 막혀도 설정 저장은 끝났으므로 화면 흐름은 이어간다.
-    }
-  }
-
-  return result
+  return currentUserPromise
 }
