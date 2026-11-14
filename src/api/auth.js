@@ -1,5 +1,5 @@
 import { ApiError, apiRequest } from './client'
-import { readSession, saveSession } from './session'
+import { clearSession, readSession, saveSession } from './session'
 
 let restorePromise = null
 
@@ -97,4 +97,25 @@ export const restoreLogin = () => {
   })
 
   return restorePromise
+}
+
+/**
+ * 로그아웃
+ * - 서버 요청이 실패해도(응답 본문이 비어 있는 경우 포함) 저장된 인증 정보는 항상 지운다.
+ */
+export const logout = async () => {
+  const session = readSession()
+
+  try {
+    if (session) {
+      await apiRequest('/auth/logout', {
+        method: 'POST',
+        body: { refreshToken: session.refreshToken },
+      })
+    }
+  } catch {
+    // 로그아웃은 서버 응답과 관계없이 이 기기에서 끝낸다.
+  } finally {
+    clearSession()
+  }
 }

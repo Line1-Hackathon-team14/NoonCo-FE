@@ -1,6 +1,7 @@
-import { useEffect, useRef } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { Navigate, useLocation, useNavigate } from 'react-router-dom'
 
+import { deleteMaterial } from '../../api/materials'
 import { AppBar } from '../../components/app-bar/AppBar'
 import { Button } from '../../components/button/Button'
 import { formatFileSize } from '../../utils/formatFileSize'
@@ -30,6 +31,7 @@ function PdfConfirmPage() {
   const navigate = useNavigate()
   const { state } = useLocation()
   const titleRef = useRef(null)
+  const [leaving, setLeaving] = useState(false)
 
   // 페이지 진입 시 화면 이름을 알리고 h1(AppBar 제목)로 포커스를 옮긴다.
   useEffect(() => {
@@ -47,8 +49,18 @@ function PdfConfirmPage() {
   const meta = hasError || pageCount == null ? sizeText : `${sizeText} · ${pageCount}쪽`
 
   // 08에서 이 화면으로 왔으므로 이전 화면(08)으로 돌아간다.
-  const handlePickAnother = () => {
-    // TODO(#32): 업로드된 자료가 있으면 DELETE /materials/{materialId} 후 이동 (실패해도 이동)
+  // 업로드된 자료가 있으면 먼저 지우고, 삭제가 실패해도 이동한다.
+  const handlePickAnother = async () => {
+    if (leaving) return
+    setLeaving(true)
+
+    if (state.materialId) {
+      try {
+        await deleteMaterial(state.materialId)
+      } catch (deleteError) {
+        console.error('자료 삭제에 실패했어요.', deleteError)
+      }
+    }
     navigate(-1)
   }
 

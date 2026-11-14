@@ -43,3 +43,19 @@
   flex-shrink: 0;
   padding: 16px 16px 32px;
 }
+
+.my-page__status {
+  font: var(--font-label-m);
+  color: var(--color-text-primary);
+}
+
+.my-page__error {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.my-page__error-message {
+  font: var(--font-label-m);
+  color: var(--color-status-danger);
+}
