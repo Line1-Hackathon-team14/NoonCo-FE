@@ -1,10 +1,12 @@
 import { useEffect, useId, useRef, useState } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 
 import { getCurrentUser } from '../../api/users'
 import { Button } from '../../components/button/Button'
 import { Chip } from '../../components/chip/Chip'
 import { Icon } from '../../components/icon/Icon'
+import { prepareCamera } from '../../utils/cameraSession'
+
 import './HomePage.css'
 
 const DIFFICULTY_LABELS = {
@@ -22,22 +24,16 @@ const DATE_FORMATTER = new Intl.DateTimeFormat('ko-KR', {
 
 const getToday = () => DATE_FORMATTER.format(new Date())
 
-/**
- * 홈의 주요 기능 이동 카드
- * - 카드 전체를 하나의 링크로 사용한다.
- *
- * @param {string} to 이동 경로
- * @param {'camera' | 'pdf'} variant 카드 종류
- * @param {string} icon 아이콘 이름
- * @param {string} title 제목
- * @param {string} description 설명
- */
-function HomeActionCard({ to, variant, icon, title, description }) {
+/** 홈의 주요 기능 이동 카드 */
+function HomeActionCard({ to, variant, icon, title, description, onClick, busy }) {
   const id = useId()
 
   return (
     <Link
       to={to}
+      onClick={onClick}
+      aria-disabled={busy || undefined}
+      aria-busy={busy || undefined}
       className={`home-card home-card--${variant}`}
       aria-labelledby={`${id}-title`}
       aria-describedby={`${id}-description`}
@@ -46,7 +42,6 @@ function HomeActionCard({ to, variant, icon, title, description }) {
         <span className='home-card__icon'>
           <Icon name={icon} width={34} height={34} />
         </span>
-
         <span className='home-card__arrow'>
           <Icon name='chevron-right' width={28} height={28} />
         </span>
@@ -56,7 +51,6 @@ function HomeActionCard({ to, variant, icon, title, description }) {
         <h2 id={`${id}-title`} className='home-card__title'>
           {title}
         </h2>
-
         <p id={`${id}-description`} className='home-card__description'>
           {description}
         </p>
@@ -65,14 +59,14 @@ function HomeActionCard({ to, variant, icon, title, description }) {
   )
 }
 
-/**
- * 홈 화면
- * - 사용자 이름과 난이도를 서버에서 조회한다.
- * - 진입 안내는 스크린리더로 제공한다.
- */
+/** 사용자 정보와 주요 기능을 표시한다. */
 function HomePage() {
+  const navigate = useNavigate()
   const titleRef = useRef(null)
+  const openingRef = useRef(null)
 
+  const [opening, setOpening] = useState(false)
+  const [cameraError, setCameraError] = useState('')
   const [today, setToday] = useState(getToday)
   const [attempt, setAttempt] = useState(0)
   const [state, setState] = useState({
@@ -85,14 +79,14 @@ function HomePage() {
     document.title = '홈 | 눈치코치'
   }, [])
 
+  useEffect(() => () => openingRef.current?.abort(), [])
+
   useEffect(() => {
     const updateToday = () => setToday(getToday())
     const timer = setInterval(updateToday, 60000)
 
     const handleVisibility = () => {
-      if (document.visibilityState === 'visible') {
-        updateToday()
-      }
+      if (document.visibilityState === 'visible') updateToday()
     }
 
     document.addEventListener('visibilitychange', handleVisibility)
@@ -118,11 +112,7 @@ function HomePage() {
           throw new Error('서버의 사용자 정보 형식을 확인해 주세요.')
         }
 
-        setState({
-          status: 'ready',
-          user,
-          error: '',
-        })
+        setState({ status: 'ready', user, error: '' })
       })
       .catch((error) => {
         if (!active) return
@@ -146,12 +136,37 @@ function HomePage() {
   }, [state.status])
 
   const handleRetry = () => {
-    setState({
-      status: 'loading',
-      user: null,
-      error: '',
-    })
+    setState({ status: 'loading', user: null, error: '' })
     setAttempt((previous) => previous + 1)
+  }
+
+  const openCamera = async (event) => {
+    event.preventDefault()
+
+    if (openingRef.current) return
+
+    const controller = new AbortController()
+    openingRef.current = controller
+
+    setOpening(true)
+    setCameraError('')
+
+    try {
+      await prepareCamera(controller.signal)
+
+      if (!controller.signal.aborted) {
+        navigate('/camera')
+      }
+    } catch (error) {
+      if (!controller.signal.aborted) {
+        setCameraError(error.message)
+      }
+    } finally {
+      if (!controller.signal.aborted) {
+        openingRef.current = null
+        setOpening(false)
+      }
+    }
   }
 
   if (state.status === 'loading') {
@@ -162,7 +177,6 @@ function HomePage() {
             <h1 id='home-title' className='home__title'>
               홈
             </h1>
-
             <p className='home__status-description' role='status'>
               사용자 정보를 불러오고 있어요.
             </p>
@@ -186,11 +200,9 @@ function HomePage() {
             >
               홈을 불러오지 못했어요
             </h1>
-
             <p id='home-error' className='home__status-description'>
               {state.error}
             </p>
-
             <Button onClick={handleRetry}>다시 시도하기</Button>
           </div>
         </div>
@@ -206,7 +218,6 @@ function HomePage() {
         <header className='home__header'>
           <div className='home__greeting'>
             <p className='home__date'>{today}</p>
-
             <h1
               ref={titleRef}
               id='home-title'
@@ -219,7 +230,6 @@ function HomePage() {
               {user.name} 학생
             </h1>
           </div>
-
           <Link to='/mypage' className='home__profile' aria-label='마이페이지'>
             <Icon name='user' width={28} height={28} aria-hidden='true' />
           </Link>
@@ -232,10 +242,14 @@ function HomePage() {
         <div className='home__cards'>
           <HomeActionCard
             to='/camera'
+            onClick={openCamera}
+            busy={opening}
             variant='camera'
             icon='camera'
             title='표·그래프 촬영하기'
-            description='카메라가 위치와 조명을 음성으로 안내해요'
+            description={
+              opening ? '카메라 권한을 확인하고 있어요' : '카메라가 위치와 조명을 음성으로 안내해요'
+            }
           />
 
           <HomeActionCard
@@ -247,9 +261,14 @@ function HomePage() {
           />
         </div>
 
+        {cameraError && (
+          <p className='home__status-description' role='alert'>
+            {cameraError}
+          </p>
+        )}
+
         <p className='home__tip'>
           <Icon name='info' width={20} height={20} aria-hidden='true' />
-
           <span>마이페이지에서 지난 학습 기록을 다시 들을 수 있어요</span>
         </p>
       </div>

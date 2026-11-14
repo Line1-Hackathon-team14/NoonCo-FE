@@ -29,17 +29,23 @@ export class ApiError extends Error {
   }
 }
 
-/** Axios로 요청하고 응답의 data를 반환한다. */
-const send = async (path, { method = 'GET', body, accessToken } = {}) => {
+/** JSON 또는 스트림 응답을 반환한다. */
+const send = async (path, { method = 'GET', body, accessToken, signal, stream = false } = {}) => {
   try {
     const response = await http.request({
       url: path,
       method,
       data: body,
-      headers: accessToken ? { Authorization: `Bearer ${accessToken}` } : {},
+      signal,
+      ...(stream ? { adapter: 'fetch', responseType: 'stream', timeout: 0 } : {}),
+      headers: {
+        ...(accessToken ? { Authorization: `Bearer ${accessToken}` } : {}),
+        Accept: stream ? 'application/x-ndjson' : 'application/json',
+      },
     })
 
     if (response.status === 204) return null
+    if (stream) return response.data
 
     const payload = response.data
 
@@ -53,11 +59,19 @@ const send = async (path, { method = 'GET', body, accessToken } = {}) => {
 
     return payload.data
   } catch (error) {
-    if (error instanceof ApiError) throw error
+    if (error instanceof ApiError || axios.isCancel(error)) throw error
     if (!axios.isAxiosError(error)) throw error
 
     if (error.response) {
-      const payload = error.response.data
+      let payload = error.response.data
+
+      if (typeof payload?.getReader === 'function') {
+        try {
+          payload = await new Response(payload).json()
+        } catch {
+          payload = null
+        }
+      }
 
       throw new ApiError(payload?.msg || '요청을 처리하지 못했어요. 잠시 후 다시 시도해 주세요.', {
         code: payload?.resultCode || 'HTTP_ERROR',
@@ -106,15 +120,12 @@ const refreshAccessToken = (failedAccessToken) => {
       })
     }
 
-    // 다른 요청이나 탭에서 이미 재발급했다면 재사용한다.
     if (session.accessToken !== failedAccessToken) return
 
     try {
       const tokens = await send('/auth/refresh', {
         method: 'POST',
-        body: {
-          refreshToken: session.refreshToken,
-        },
+        body: { refreshToken: session.refreshToken },
       })
 
       if (readSession()?.refreshToken !== session.refreshToken) {
@@ -123,10 +134,7 @@ const refreshAccessToken = (failedAccessToken) => {
         })
       }
 
-      saveSession({
-        ...session,
-        ...tokens,
-      })
+      saveSession({ ...session, ...tokens })
     } catch (error) {
       if (error.status === 401 || error.code === 'INVALID_REFRESH_TOKEN') {
         expireSession(session)
@@ -136,7 +144,6 @@ const refreshAccessToken = (failedAccessToken) => {
     }
   }
 
-  // 지원 브라우저에서는 탭 사이의 재발급도 순서대로 처리한다.
   const task = globalThis.navigator?.locks
     ? navigator.locks.request('noonco-token-refresh', refresh)
     : refresh()
@@ -150,11 +157,8 @@ const refreshAccessToken = (failedAccessToken) => {
 
 /**
  * 공통 API 요청
- * - 응답 본문이 { resultCode, msg, data }인 API에 사용한다.
  * - 만료된 토큰은 재발급 후 한 번만 재시도한다.
- *
- * @param {string} path /api/v1 뒤의 경로
- * @param {{ method?: string, body?: object, auth?: boolean }} options
+ * - stream 옵션은 NDJSON 분석 요청에 사용한다.
  */
 export const apiRequest = async (path, { auth = true, ...options } = {}) => {
   if (!path.startsWith('/') || path.startsWith('//')) {
@@ -204,10 +208,7 @@ export const apiRequest = async (path, { auth = true, ...options } = {}) => {
         accessToken: renewed.accessToken,
       })
     } catch (retryError) {
-      if (retryError.status === 401) {
-        expireSession(renewed)
-      }
-
+      if (retryError.status === 401) expireSession(renewed)
       throw retryError
     }
   }

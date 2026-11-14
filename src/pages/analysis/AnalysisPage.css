@@ -1,0 +1,169 @@
+.analysis-page {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
+  height: 100%;
+  min-height: 0;
+  overflow-y: auto;
+  padding: calc(72px + env(safe-area-inset-top, 0px)) 16px
+    calc(32px + env(safe-area-inset-bottom, 0px));
+  background: var(--color-surface-base);
+  color: var(--color-text-primary);
+}
+
+.analysis-page--failed {
+  gap: 22px;
+  padding-top: calc(44px + env(safe-area-inset-top, 0px));
+}
+
+.analysis-page > * {
+  flex-shrink: 0;
+}
+
+.analysis-page__symbol {
+  width: 168px;
+  height: 168px;
+}
+
+.analysis-page__gauge {
+  position: relative;
+  width: 168px;
+  height: 168px;
+}
+
+.analysis-page__ring {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.analysis-page__ring-track {
+  stroke: var(--color-surface-sunken);
+}
+
+.analysis-page__ring-fill {
+  stroke: var(--color-brand-navy);
+  animation: analysis-fill 60s linear forwards;
+}
+
+/* 서버에서 완료 응답을 받으면 원을 채운다. */
+.analysis-page__gauge--complete .analysis-page__ring-fill {
+  animation: none;
+  stroke-dashoffset: 0;
+}
+
+/* 기존 SVG에서 중앙 아이콘만 표시한다. */
+.analysis-page__sparkle {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  clip-path: circle(30% at 50% 50%);
+}
+
+.analysis-page__announcement {
+  width: 100%;
+  text-align: center;
+}
+
+.analysis-page h1 {
+  font: var(--font-title-l);
+  white-space: pre-line;
+  word-break: keep-all;
+}
+
+.analysis-page__announcement p {
+  margin-top: 20px;
+  color: var(--color-text-secondary);
+  font: var(--font-body-m);
+  white-space: pre-line;
+  word-break: keep-all;
+  overflow-wrap: anywhere;
+}
+
+.analysis-page__steps {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  width: 100%;
+  padding: 12px 20px;
+  border-radius: var(--radius-md);
+  background: var(--color-surface-muted);
+}
+
+.analysis-page__steps li {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 0;
+  font: var(--font-body-m);
+}
+
+.analysis-page__steps img,
+.analysis-page__steps svg {
+  flex-shrink: 0;
+}
+
+.analysis-page__steps span {
+  font: inherit;
+  word-break: keep-all;
+}
+
+.analysis-page__steps .analysis-page__step--active {
+  font: var(--font-label-m);
+}
+
+.analysis-page__steps .analysis-page__step--failed {
+  color: var(--color-status-danger-text);
+  font: var(--font-label-m);
+}
+
+.analysis-page__actions {
+  display: flex;
+  flex-direction: column;
+  gap: 22px;
+  width: 100%;
+  margin-top: auto;
+  padding-top: 24px;
+}
+
+.analysis-page__actions .button__label {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+/* 대기 애니메이션은 92%에서 멈춘다. */
+@keyframes analysis-fill {
+  0% {
+    stroke-dashoffset: 100;
+  }
+
+  10% {
+    stroke-dashoffset: 65;
+  }
+
+  30% {
+    stroke-dashoffset: 35;
+  }
+
+  60% {
+    stroke-dashoffset: 16;
+  }
+
+  100% {
+    stroke-dashoffset: 8;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .analysis-page__ring-fill {
+    animation: none;
+    stroke-dashoffset: 35;
+  }
+
+  .analysis-page__gauge--complete .analysis-page__ring-fill {
+    stroke-dashoffset: 0;
+  }
+}

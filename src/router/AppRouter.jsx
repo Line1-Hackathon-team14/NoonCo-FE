@@ -2,9 +2,11 @@ import { createBrowserRouter } from 'react-router-dom'
 
 import MainLayout from '../layout/main-layout/MainLayout'
 
+import AnalysisPage from '../pages/analysis/AnalysisPage'
 import CameraPage from '../pages/camera/CameraPage'
 import HistoryPage from '../pages/history/HistoryPage'
 import HomePage from '../pages/home/HomePage'
+import ImageResultPage from '../pages/image-result/ImageResultPage'
 import LevelSettingPage from '../pages/level-setting/LevelSettingPage'
 import LoginPage from '../pages/login/LoginPage'
 import MyPage from '../pages/my-page/MyPage'
@@ -41,6 +43,14 @@ export const AppRouter = createBrowserRouter([
       {
         path: 'camera',
         element: <CameraPage />,
+      },
+      {
+        path: 'analyzing/:jobId',
+        element: <AnalysisPage />,
+      },
+      {
+        path: 'image-result/:materialId',
+        element: <ImageResultPage />,
       },
       {
         path: 'pdf',
