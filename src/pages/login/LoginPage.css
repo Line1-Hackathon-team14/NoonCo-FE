@@ -18,15 +18,19 @@
     calc(16px + env(safe-area-inset-bottom, 0px));
 }
 
+/* 로고 오른쪽에 데모 로그인 버튼을 배치한다. */
 .login__header {
-  display: flex;
+  display: grid;
   flex: 0 0 auto;
-  flex-direction: column;
-  align-items: flex-start;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: center;
   gap: 12px;
+  width: 100%;
 }
 
 .login__logo {
+  grid-column: 1;
+  grid-row: 1;
   width: clamp(48px, 10svh, 92px);
   height: clamp(48px, 10svh, 92px);
   flex-shrink: 0;
@@ -34,9 +38,39 @@
   overflow: hidden;
 }
 
+.login__demo {
+  grid-column: 2;
+  grid-row: 1;
+  justify-self: end;
+  min-width: 0;
+  min-height: 48px;
+  max-width: 100%;
+  padding: 10px 12px;
+  border: 1px solid var(--color-brand-navy);
+  border-radius: var(--radius-sm);
+  background-color: var(--color-surface-muted);
+  color: var(--color-text-brand);
+  font: var(--font-caption);
+  text-align: center;
+  word-break: keep-all;
+  cursor: pointer;
+}
+
+.login__demo:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+.login__demo:focus-visible {
+  outline: 3px solid var(--color-focus-ring);
+  outline-offset: 3px;
+}
+
 .login__intro {
   display: flex;
+  grid-column: 1 / -1;
   flex-direction: column;
+  min-width: 0;
   gap: 6px;
 }
 
@@ -216,17 +250,26 @@
   white-space: nowrap;
 }
 
-/* 키보드 등으로 화면이 낮아지면 소개 영역을 간소화한다. */
+/* 낮은 화면에서는 로고·제목·데모 버튼을 한 줄로 배치한다. */
 @media (max-height: 600px) {
   .login__header {
-    flex-direction: row;
-    align-items: center;
+    grid-template-columns: 48px minmax(0, 1fr) auto;
   }
 
   .login__logo {
     width: 48px;
     height: 48px;
     border-radius: var(--radius-sm);
+  }
+
+  .login__intro {
+    grid-column: 2;
+    grid-row: 1;
+  }
+
+  .login__demo {
+    grid-column: 3;
+    padding-inline: 8px;
   }
 
   .login__title {
@@ -243,7 +286,8 @@
 }
 
 @media (forced-colors: active) {
-  .login__input-wrap:focus-within {
+  .login__input-wrap:focus-within,
+  .login__demo:focus-visible {
     outline: 3px solid Highlight;
     outline-offset: 2px;
   }

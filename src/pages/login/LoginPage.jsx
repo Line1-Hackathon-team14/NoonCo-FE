@@ -6,6 +6,11 @@ import { Button } from '../../components/button/Button'
 import { Icon } from '../../components/icon/Icon'
 import './LoginPage.css'
 
+const DEMO_ACCOUNT = {
+  email: 'noonco@example.com',
+  password: 'noonco1234',
+}
+
 /** 로그인 입력값을 검사한다. */
 const validateLogin = (email, password) => {
   const fields = {}
@@ -53,11 +58,7 @@ const createFeedback = (error) => {
   }
 }
 
-/**
- * 이메일 로그인 화면
- * - 서버에서 저장된 인증 정보를 확인한 뒤 홈으로 이동한다.
- * - 오류는 포커스로 안내하며 별도 TTS는 사용하지 않는다.
- */
+/** 이메일 로그인과 데모 계정 로그인을 제공한다. */
 function LoginPage() {
   const navigate = useNavigate()
 
@@ -72,9 +73,9 @@ function LoginPage() {
   const [password, setPassword] = useState('')
   const [feedback, setFeedback] = useState(null)
   const [checking, setChecking] = useState(true)
-  const [submitting, setSubmitting] = useState(false)
+  const [submitting, setSubmitting] = useState(null)
 
-  const busy = checking || submitting
+  const busy = checking || submitting !== null
   const fieldErrors = feedback?.fields ?? {}
   const message = feedback?.message ?? ''
 
@@ -128,7 +129,43 @@ function LoginPage() {
     }
   }, [feedback])
 
-  const handleSubmit = async (event) => {
+  /** 두 로그인 버튼의 중복 요청을 막는다. */
+  const submitLogin = async (credentials, mode) => {
+    if (busy || submitLockRef.current) return
+
+    submitLockRef.current = true
+    setSubmitting(mode)
+    setFeedback(null)
+
+    try {
+      await login(credentials)
+
+      if (!mountedRef.current) return
+
+      setPassword('')
+      navigate('/home', { replace: true })
+    } catch (error) {
+      if (!mountedRef.current) return
+
+      if (mode === 'demo') {
+        setFeedback({
+          fields: {},
+          message: `데모 로그인에 실패했어요. ${error.message || '잠시 후 다시 시도해 주세요.'}`,
+          focus: 'message',
+        })
+      } else {
+        setFeedback(createFeedback(error))
+      }
+    } finally {
+      submitLockRef.current = false
+
+      if (mountedRef.current) {
+        setSubmitting(null)
+      }
+    }
+  }
+
+  const handleSubmit = (event) => {
     event.preventDefault()
 
     if (busy || submitLockRef.current) return
@@ -145,28 +182,11 @@ function LoginPage() {
       return
     }
 
-    submitLockRef.current = true
-    setSubmitting(true)
-    setFeedback(null)
+    void submitLogin({ email, password }, 'normal')
+  }
 
-    try {
-      await login({ email, password })
-
-      if (!mountedRef.current) return
-
-      setPassword('')
-      navigate('/home', { replace: true })
-    } catch (error) {
-      if (!mountedRef.current) return
-
-      setFeedback(createFeedback(error))
-    } finally {
-      submitLockRef.current = false
-
-      if (mountedRef.current) {
-        setSubmitting(false)
-      }
-    }
+  const handleDemoLogin = () => {
+    void submitLogin(DEMO_ACCOUNT, 'demo')
   }
 
   return (
@@ -180,6 +200,16 @@ function LoginPage() {
             className='login__logo'
             aria-hidden='true'
           />
+
+          <button
+            type='button'
+            className='login__demo'
+            disabled={busy}
+            aria-busy={submitting === 'demo'}
+            onClick={handleDemoLogin}
+          >
+            {submitting === 'demo' ? '로그인 중' : '데모 로그인'}
+          </button>
 
           <div className='login__intro'>
             <h1 ref={titleRef} id='login-title' className='login__title' tabIndex={-1}>
@@ -196,7 +226,13 @@ function LoginPage() {
         </header>
 
         <p className='login__sr-only' role='status'>
-          {checking ? '로그인 상태를 확인하고 있어요.' : submitting ? '로그인하고 있어요.' : ''}
+          {checking
+            ? '로그인 상태를 확인하고 있어요.'
+            : submitting === 'demo'
+              ? '데모 계정으로 로그인하고 있어요.'
+              : submitting === 'normal'
+                ? '로그인하고 있어요.'
+                : ''}
         </p>
 
         <form className='login__form' noValidate aria-busy={busy} onSubmit={handleSubmit}>
@@ -306,7 +342,7 @@ function LoginPage() {
             )}
 
             <Button type='submit' disabled={busy}>
-              {checking ? '로그인 확인 중' : submitting ? '로그인 중' : '로그인'}
+              {checking ? '로그인 확인 중' : submitting === 'normal' ? '로그인 중' : '로그인'}
             </Button>
 
             <Link
